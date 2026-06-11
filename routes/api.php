@@ -7,6 +7,7 @@ use App\Http\Controllers\Servers\ChannelController;
 use App\Http\Controllers\Servers\InviteController;
 use App\Http\Controllers\Servers\RoleController;
 use App\Http\Controllers\Servers\ServerController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -21,6 +22,10 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware('auth')->group(function (): void {
+    // Current user
+    Route::get('me', [UserController::class, 'me'])->name('api.me.show');
+    Route::patch('me', [UserController::class, 'updateMe'])->name('api.me.update');
+
     // Servers
     Route::get('servers', [ServerController::class, 'index'])->name('api.servers.index');
     Route::post('servers', [ServerController::class, 'store'])->name('api.servers.store');

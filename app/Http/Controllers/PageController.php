@@ -147,6 +147,12 @@ class PageController extends Controller
     public function settingsIndex(Request $request): Response
     {
         $user = $request->user();
+        $userId = $user->getAuthIdentifier();
+
+        $servers = Server::query()
+            ->whereHas('members', fn ($q) => $q->where('users.id', $userId))
+            ->orderBy('name')
+            ->get(['id', 'name', 'icon_url']);
 
         return Inertia::render('Settings/Index', [
             'user' => [
@@ -157,12 +163,14 @@ class PageController extends Controller
                 'avatar_url' => $user->avatar_url,
                 'status' => $user->status,
             ],
+            'servers' => $servers,
         ]);
     }
 
     public function settingsServer(Request $request, Server $server): Response
     {
         $this->ensureMember($request, $server);
+        $userId = $request->user()->getAuthIdentifier();
 
         $server->load([
             'channels' => fn ($q) => $q->orderBy('position')->orderBy('id'),
@@ -171,8 +179,14 @@ class PageController extends Controller
             'invites' => fn ($q) => $q->orderByDesc('created_at'),
         ]);
 
+        $servers = Server::query()
+            ->whereHas('members', fn ($q) => $q->where('users.id', $userId))
+            ->orderBy('name')
+            ->get(['id', 'name', 'icon_url']);
+
         return Inertia::render('Settings/ServerShow', [
             'server' => $server,
+            'servers' => $servers,
         ]);
     }
 
