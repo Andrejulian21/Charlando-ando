@@ -20,6 +20,12 @@ Route::get('/auth/{provider}/callback', [OAuthController::class, 'callback'])
     ->where('provider', 'google|github|discord')
     ->name('oauth.callback');
 
+// Frontend Inertia page that consumes the session-stashed OAuth result.
+// Reachable while logged out (the OAuth callback stores the result and
+// redirects here) and also when already authenticated.
+Route::get('/auth/callback', [OAuthController::class, 'callbackPage'])
+    ->name('auth.callback');
+
 // Public login page.
 Route::get('/login', [PageController::class, 'login'])
     ->name('login');

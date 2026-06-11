@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
+use Inertia\Response;
 use Laravel\Socialite\Facades\Socialite;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -56,9 +58,12 @@ class OAuthController extends Controller
 
         $token = $this->jwt->generate($user);
 
-        return response()->json([
+        // For the Inertia/SPA flow, stash the token + user in the session and
+        // redirect to the frontend Callback page. The page stores the token
+        // in localStorage and navigates the browser to /chat. This avoids
+        // landing on a raw JSON response in the browser tab.
+        $request->session()->put('oauth_result', [
             'token' => $token,
-            'token_type' => 'Bearer',
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -66,6 +71,29 @@ class OAuthController extends Controller
                 'email' => $user->email,
                 'avatar_url' => $user->avatar_url,
             ],
+        ]);
+
+        return redirect()->route('auth.callback');
+    }
+
+    /**
+     * Frontend Inertia page that consumes the session-stashed OAuth result
+     * and stores the JWT in localStorage on behalf of the SPA. The actual
+     * navigation to /chat happens client-side from Auth/Callback.jsx.
+     */
+    public function callbackPage(Request $request): Response|RedirectResponse
+    {
+        $result = $request->session()->pull('oauth_result');
+
+        if (! is_array($result) || empty($result['token'])) {
+            return redirect()->route('login')->withErrors([
+                'oauth' => 'OAuth session expired. Please try again.',
+            ]);
+        }
+
+        return Inertia::render('Auth/Callback', [
+            'token' => $result['token'],
+            'user' => $result['user'] ?? null,
         ]);
     }
 

@@ -1,11 +1,13 @@
 <?php
 
+use App\Http\Controllers\Messages\DirectMessageController;
 use App\Http\Controllers\Messages\MessageController;
 use App\Http\Controllers\PresenceController;
 use App\Http\Controllers\Servers\ChannelController;
 use App\Http\Controllers\Servers\InviteController;
 use App\Http\Controllers\Servers\RoleController;
 use App\Http\Controllers\Servers\ServerController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,6 +22,10 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware('auth')->group(function (): void {
+    // Current user
+    Route::get('me', [UserController::class, 'me'])->name('api.me.show');
+    Route::patch('me', [UserController::class, 'updateMe'])->name('api.me.update');
+
     // Servers
     Route::get('servers', [ServerController::class, 'index'])->name('api.servers.index');
     Route::post('servers', [ServerController::class, 'store'])->name('api.servers.store');
@@ -39,6 +45,12 @@ Route::middleware('auth')->group(function (): void {
         ->name('api.channels.messages.index');
     Route::post('servers/{server}/channels/{channel}/messages', [MessageController::class, 'store'])
         ->name('api.channels.messages.store');
+
+    // Direct messages
+    Route::get('dms/{dm}/messages', [DirectMessageController::class, 'index'])
+        ->name('api.dms.messages.index');
+    Route::post('dms/{dm}/messages', [DirectMessageController::class, 'store'])
+        ->name('api.dms.messages.store');
 
     // Invites
     Route::get('servers/{server}/invites', [InviteController::class, 'index'])->name('api.servers.invites.index');
