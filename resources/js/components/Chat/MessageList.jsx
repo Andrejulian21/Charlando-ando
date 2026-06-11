@@ -47,7 +47,26 @@ function shouldGroupWith(prev, curr) {
     return currT - prevT < 5 * 60_000;
 }
 
-export default function MessageList({ room, initialMessages, initialCursor, serverId, channelId, members = [] }) {
+export default function MessageList({
+    room,
+    initialMessages,
+    initialCursor,
+    serverId,
+    channelId,
+    fetchUrl,
+    members = [],
+}) {
+    // Resolve the cursor-pagination URL once. Channels pass
+    // serverId + channelId (used to build /api/servers/.../channels/.../messages);
+    // DMs pass an explicit `fetchUrl` like /api/dms/{id}/messages.
+    const resolvedFetchUrl = useMemo(() => {
+        if (fetchUrl) return fetchUrl;
+        if (serverId != null && channelId != null) {
+            return `/api/servers/${serverId}/channels/${channelId}/messages`;
+        }
+        return null;
+    }, [fetchUrl, serverId, channelId]);
+
     const messages = useChatStore((s) => s.messages.get(room)) ?? [];
     const setMessages = useChatStore((s) => s.setMessages);
     const prependMessages = useChatStore((s) => s.prependMessages);
@@ -131,7 +150,7 @@ export default function MessageList({ room, initialMessages, initialCursor, serv
     useEffect(() => {
         const sentinel = topSentinelRef.current;
         const scroller = scrollerRef.current;
-        if (!sentinel || !scroller || !hasMore || cursor == null) return undefined;
+        if (!sentinel || !scroller || !hasMore || cursor == null || !resolvedFetchUrl) return undefined;
 
         const observer = new IntersectionObserver(
             async (entries) => {
@@ -142,10 +161,7 @@ export default function MessageList({ room, initialMessages, initialCursor, serv
                 setLoadingMore(true);
                 lastPrewpendHeight.current = scroller.scrollHeight;
                 try {
-                    const response = await window.axios.get(
-                        `/api/servers/${serverId}/channels/${channelId}/messages`,
-                        { params: { cursor } }
-                    );
+                    const response = await window.axios.get(resolvedFetchUrl, { params: { cursor } });
                     const data = response.data?.data ?? [];
                     const nextCursor = response.data?.next_cursor ?? null;
                     prependMessages(room, data);
@@ -162,7 +178,7 @@ export default function MessageList({ room, initialMessages, initialCursor, serv
         );
         observer.observe(sentinel);
         return () => observer.disconnect();
-    }, [cursor, hasMore, loadingMore, prependMessages, room, serverId, channelId]);
+    }, [cursor, hasMore, loadingMore, prependMessages, room, resolvedFetchUrl]);
 
     // After prepending older messages, restore the user's scroll position
     // by offsetting the new scrollHeight against the captured one.
@@ -195,7 +211,7 @@ export default function MessageList({ room, initialMessages, initialCursor, serv
             )}
             {!hasMore && messages.length > 0 && (
                 <p className="px-4 py-2 text-center text-[10px] uppercase tracking-wider text-fg-subtle">
-                    Beginning of #{channelId ?? 'channel'}
+                    Beginning of #{channelId ?? 'conversation'}
                 </p>
             )}
 

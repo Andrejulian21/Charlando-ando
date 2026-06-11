@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Messages\DirectMessageController;
 use App\Http\Controllers\Messages\MessageController;
 use App\Http\Controllers\PresenceController;
 use App\Http\Controllers\Servers\ChannelController;
@@ -39,6 +40,12 @@ Route::middleware('auth')->group(function (): void {
         ->name('api.channels.messages.index');
     Route::post('servers/{server}/channels/{channel}/messages', [MessageController::class, 'store'])
         ->name('api.channels.messages.store');
+
+    // Direct messages
+    Route::get('dms/{dm}/messages', [DirectMessageController::class, 'index'])
+        ->name('api.dms.messages.index');
+    Route::post('dms/{dm}/messages', [DirectMessageController::class, 'store'])
+        ->name('api.dms.messages.store');
 
     // Invites
     Route::get('servers/{server}/invites', [InviteController::class, 'index'])->name('api.servers.invites.index');

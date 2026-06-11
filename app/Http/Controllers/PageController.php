@@ -122,11 +122,25 @@ class PageController extends Controller
             'userB:id,name,display_name,avatar_url,status',
         ]);
 
+        $threads = \App\Models\DirectMessage::query()
+            ->where(function ($q) use ($userId) {
+                $q->where('user_a_id', $userId)->orWhere('user_b_id', $userId);
+            })
+            ->with([
+                'userA:id,name,display_name,avatar_url,status',
+                'userB:id,name,display_name,avatar_url,status',
+            ])
+            ->orderByDesc('last_message_at')
+            ->orderByDesc('id')
+            ->limit(50)
+            ->get();
+
         return Inertia::render('Dms/Show', [
             'dm' => $dm,
             'messages' => $messages->values(),
             'nextCursor' => $hasMore ? (int) $messages->last()->id : null,
             'currentUserId' => $userId,
+            'threads' => $threads,
         ]);
     }
 
