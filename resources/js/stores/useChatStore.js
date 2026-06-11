@@ -13,6 +13,7 @@
 // listeners that dispatch `addMessage` / `setPresence` actions.
 
 import { create } from 'zustand';
+import { useEffect } from 'react';
 import { subscribe as echoSubscribe, unsubscribe as echoUnsubscribe, connect, disconnect } from '../echo';
 
 const TOKEN_STORAGE_KEY = 'auth_token';
@@ -281,4 +282,22 @@ export function useMessages(room) {
  */
 export function usePresence(userId) {
     return useChatStore((state) => (userId != null ? state.presence.get(userId) : undefined));
+}
+
+/**
+ * Live presence hook. Subscribes to the user's `user:{id}` room on mount
+ * so the WebSocket fan-out from the sidecar updates the store, and reads
+ * the latest record on every render. Use this anywhere a user is rendered
+ * to get real-time status changes without manual subscription wiring.
+ */
+export function useUserPresence(userId) {
+    const subscribeToRoom = useChatStore((s) => s.subscribeToRoom);
+    const presence = useChatStore((s) => (userId != null ? s.presence.get(userId) : undefined));
+
+    useEffect(() => {
+        if (userId == null) return undefined;
+        return subscribeToRoom(`user:${userId}`);
+    }, [userId, subscribeToRoom]);
+
+    return presence;
 }

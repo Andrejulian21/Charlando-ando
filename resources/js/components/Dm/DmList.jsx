@@ -4,7 +4,7 @@
 
 import { Link } from '@inertiajs/react';
 import UserAvatar from '../Presence/UserAvatar';
-import { usePresence } from '../../stores/useChatStore';
+import { useUserPresence } from '../../stores/useChatStore';
 
 function pickOther(thread, currentUserId) {
     if (!thread) return null;
@@ -29,7 +29,8 @@ function relativeTime(iso) {
 
 function DmRow({ thread, currentUserId, active }) {
     const other = pickOther(thread, currentUserId);
-    const live = usePresence(other?.id);
+    // Subscribe to live presence for the other participant.
+    const live = useUserPresence(other?.id);
     const status = live?.status ?? other?.status ?? 'offline';
     const enrichedOther = other ? { ...other, status } : null;
 

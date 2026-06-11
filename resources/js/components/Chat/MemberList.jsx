@@ -6,29 +6,34 @@
 
 import { useState } from 'react';
 import UserAvatar from '../Presence/UserAvatar';
-import { usePresence } from '../../stores/useChatStore';
+import LastSeen from '../Presence/LastSeen';
+import { useUserPresence } from '../../stores/useChatStore';
 
 function MemberRow({ member, currentUserId }) {
-    const live = usePresence(member.id);
+    // Subscribe to live presence updates for this member.
+    const live = useUserPresence(member.id);
     const status = live?.status ?? member.status ?? 'offline';
     const enriched = { ...member, status };
 
     return (
         <li>
-            <button
-                type="button"
-                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm text-fg-muted transition-colors hover:bg-deep-space-700 hover:text-fg"
-            >
+            <div className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-fg-muted transition-colors hover:bg-deep-space-700 hover:text-fg">
                 <UserAvatar user={enriched} size="sm" />
-                <span className="truncate">
-                    {member.display_name || member.name}
-                    {Number(member.id) === Number(currentUserId) && (
-                        <span className="ml-1 text-[10px] text-fg-subtle">(you)</span>
-                    )}
-                </span>
-                {status === 'idle' && <span className="ml-auto text-[10px] text-warning">idle</span>}
-                {status === 'dnd' && <span className="ml-auto text-[10px] text-danger">dnd</span>}
-            </button>
+                <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm text-fg-muted">
+                        {member.display_name || member.name}
+                        {Number(member.id) === Number(currentUserId) && (
+                            <span className="ml-1 text-[10px] text-fg-subtle">(you)</span>
+                        )}
+                    </p>
+                    <LastSeen
+                        userId={member.id}
+                        fallbackStatus={status}
+                        lastSeenAt={member.last_seen_at}
+                        className="mt-0.5 block"
+                    />
+                </div>
+            </div>
         </li>
     );
 }

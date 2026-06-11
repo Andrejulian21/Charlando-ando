@@ -5,6 +5,7 @@
 import { useEffect, useRef, useState } from 'react';
 import MessageList from '../Chat/MessageList';
 import UserAvatar from '../Presence/UserAvatar';
+import LastSeen from '../Presence/LastSeen';
 import { useChatStore } from '../../stores/useChatStore';
 
 function pickOther(dm, currentUserId) {
@@ -53,7 +54,15 @@ export default function DmChat({ dm, messages = [], nextCursor = null, currentUs
                     <h1 className="truncate font-display text-base font-semibold text-fg">
                         {other.display_name || other.name}
                     </h1>
-                    <p className="truncate text-xs text-fg-subtle">@{other.name}</p>
+                    <p className="truncate text-xs text-fg-subtle">
+                        @{other.name} ·{' '}
+                        <LastSeen
+                            userId={other.id}
+                            fallbackStatus={other.status}
+                            lastSeenAt={other.last_seen_at}
+                            className="inline"
+                        />
+                    </p>
                 </div>
             </header>
 
