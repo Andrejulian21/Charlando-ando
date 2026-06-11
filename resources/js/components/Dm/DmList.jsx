@@ -18,12 +18,12 @@ function relativeTime(iso) {
     if (Number.isNaN(date.valueOf())) return '';
     const diffMs = Date.now() - date.valueOf();
     const diffMin = Math.round(diffMs / 60_000);
-    if (diffMin < 1) return 'just now';
-    if (diffMin < 60) return `${diffMin}m ago`;
+    if (diffMin < 1) return 'ahora';
+    if (diffMin < 60) return `hace ${diffMin} min`;
     const diffH = Math.round(diffMin / 60);
-    if (diffH < 24) return `${diffH}h ago`;
+    if (diffH < 24) return `hace ${diffH} h`;
     const diffD = Math.round(diffH / 24);
-    if (diffD < 7) return `${diffD}d ago`;
+    if (diffD < 7) return `hace ${diffD} d`;
     return date.toLocaleDateString();
 }
 
@@ -66,16 +66,16 @@ function DmRow({ thread, currentUserId, active }) {
 export default function DmList({ threads = [], currentUserId, activeDmId }) {
     return (
         <aside
-            aria-label="Direct messages"
+            aria-label="Mensajes directos"
             className="flex w-72 shrink-0 flex-col border-r border-deep-space-700 bg-deep-space-800"
         >
             <header className="flex h-14 items-center border-b border-deep-space-700 px-4">
-                <h2 className="font-display text-sm font-semibold text-fg">Direct Messages</h2>
+                <h2 className="font-display text-sm font-semibold text-fg">Mensajes directos</h2>
             </header>
             <div className="flex-1 overflow-y-auto px-2 py-3">
                 {threads.length === 0 ? (
                     <p className="px-2 text-sm text-fg-subtle">
-                        No conversations yet. Open a user profile to start a DM.
+                        Aún no tienes conversaciones. Abre un perfil para iniciar un chat.
                     </p>
                 ) : (
                     <ul className="space-y-0.5">

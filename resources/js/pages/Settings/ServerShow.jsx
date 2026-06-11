@@ -8,17 +8,17 @@ import ServerSettings from '../../components/Settings/ServerSettings';
 export default function SettingsServerShow({ server, servers = [] }) {
     return (
         <>
-            <Head title={`${server?.name ?? 'Server'} — Settings`} />
+            <Head title={`${server?.name ?? 'Servidor'} — Configuración`} />
 
             <div className="flex h-screen w-screen overflow-hidden bg-deep-space-900 text-fg">
                 <aside
-                    aria-label="Settings navigation"
+                    aria-label="Navegación de configuración"
                     className="flex w-64 shrink-0 flex-col border-r border-deep-space-700 bg-deep-space-800"
                 >
                     <header className="flex h-14 items-center border-b border-deep-space-700 px-4">
-                        <h1 className="font-display text-sm font-semibold text-fg">Settings</h1>
+                        <h1 className="font-display text-sm font-semibold text-fg">Configuración</h1>
                     </header>
-                    <nav className="flex-1 overflow-y-auto px-2 py-3" aria-label="Settings tabs">
+                    <nav className="flex-1 overflow-y-auto px-2 py-3" aria-label="Pestañas de configuración">
                         <ul className="space-y-0.5">
                             <li>
                                 <Link
@@ -26,7 +26,7 @@ export default function SettingsServerShow({ server, servers = [] }) {
                                     className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-fg-muted hover:bg-deep-space-700 hover:text-fg"
                                 >
                                     <SettingsIcon />
-                                    My account
+                                    Mi cuenta
                                 </Link>
                             </li>
                         </ul>
@@ -34,7 +34,7 @@ export default function SettingsServerShow({ server, servers = [] }) {
                         {servers.length > 0 && (
                             <>
                                 <h2 className="mt-4 px-3 text-[11px] font-semibold uppercase tracking-wider text-fg-subtle">
-                                    Servers
+                                    Servidores
                                 </h2>
                                 <ul className="mt-1 space-y-0.5">
                                     {servers.map((s) => (
@@ -62,7 +62,7 @@ export default function SettingsServerShow({ server, servers = [] }) {
                                 href={`/chat/${server?.id ?? ''}`}
                                 className="block rounded-button bg-deep-space-700 px-3 py-2 text-center text-xs text-fg-muted hover:bg-deep-space-600 hover:text-fg"
                             >
-                                Back to chat
+                                Volver al chat
                             </Link>
                         </div>
                     </nav>
@@ -71,9 +71,9 @@ export default function SettingsServerShow({ server, servers = [] }) {
                 <main className="flex-1 overflow-y-auto p-8">
                     <div className="mx-auto max-w-3xl">
                         <header className="mb-6">
-                            <h2 className="font-display text-2xl font-semibold text-fg">{server?.name}</h2>
+                            <h2 className="font-display text-2xl font-semibold tracking-tight text-fg">{server?.name}</h2>
                             <p className="mt-1 text-sm text-fg-muted">
-                                Manage members, roles, and invites for this server.
+                                Administra miembros, roles e invitaciones de este servidor.
                             </p>
                         </header>
                         <ServerSettings server={server} />

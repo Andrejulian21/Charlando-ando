@@ -42,12 +42,12 @@ function ServerIcon({ server, active }) {
 export default function ServerSidebar({ servers, activeServerId, homeHref = '/chat' }) {
     return (
         <nav
-            aria-label="Servers"
+            aria-label="Servidores"
             className="flex w-[72px] shrink-0 flex-col items-center gap-2 border-r border-deep-space-700 bg-deep-space-800 px-2 py-4"
         >
             <Link
                 href={homeHref}
-                aria-label="Home"
+                aria-label="Inicio"
                 className={`flex h-12 w-12 items-center justify-center rounded-2xl text-sm font-semibold transition-all ${
                     !activeServerId
                         ? 'rounded-xl bg-primary text-white shadow-md shadow-primary/30'

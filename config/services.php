@@ -47,12 +47,6 @@ return [
         'redirect' => env('GITHUB_REDIRECT_URI'),
     ],
 
-    'discord' => [
-        'client_id' => env('DISCORD_CLIENT_ID'),
-        'client_secret' => env('DISCORD_CLIENT_SECRET'),
-        'redirect' => env('DISCORD_REDIRECT_URI'),
-    ],
-
     'socketio' => [
         'url' => env('SOCKETIO_URL', 'http://localhost:3000'),
         'cors_origin' => env('SOCKETIO_CORS_ORIGIN', '*'),

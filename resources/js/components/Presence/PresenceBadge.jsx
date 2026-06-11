@@ -12,11 +12,11 @@ const STATUS_STYLES = {
 };
 
 const STATUS_LABEL = {
-    online: 'Online',
-    idle: 'Idle',
-    dnd: 'Do not disturb',
+    online: 'En línea',
+    idle: 'Ausente',
+    dnd: 'No molestar',
     invisible: 'Invisible',
-    offline: 'Offline',
+    offline: 'Desconectado',
 };
 
 const SIZE_CLASSES = {
@@ -27,7 +27,7 @@ const SIZE_CLASSES = {
 
 export default function PresenceBadge({ status = 'offline', size = 'md', className = '', withRing = true }) {
     const colour = STATUS_STYLES[status] ?? STATUS_STYLES.offline;
-    const label = STATUS_LABEL[status] ?? 'Unknown';
+    const label = STATUS_LABEL[status] ?? 'Desconocido';
     const sizeClass = SIZE_CLASSES[size] ?? SIZE_CLASSES.md;
     const ringClass = withRing ? 'ring-2 ring-deep-space-900' : '';
 

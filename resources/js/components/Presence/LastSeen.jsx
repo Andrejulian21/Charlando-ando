@@ -6,9 +6,9 @@
 import { useUserPresence } from '../../stores/useChatStore';
 
 const STATUS_LABEL = {
-    online: 'Online',
-    idle: 'Idle',
-    dnd: 'Do not disturb',
+    online: 'En línea',
+    idle: 'Ausente',
+    dnd: 'No molestar',
 };
 
 const STATUS_CLASS = {
@@ -22,15 +22,15 @@ function relativeTime(input) {
     const date = new Date(input);
     if (Number.isNaN(date.valueOf())) return null;
     const diffMs = Date.now() - date.valueOf();
-    if (diffMs < 0) return 'just now';
+    if (diffMs < 0) return 'ahora';
     const diffSec = Math.round(diffMs / 1000);
-    if (diffSec < 60) return 'just now';
+    if (diffSec < 60) return 'ahora';
     const diffMin = Math.round(diffSec / 60);
-    if (diffMin < 60) return `${diffMin} min ago`;
+    if (diffMin < 60) return `hace ${diffMin} min`;
     const diffH = Math.round(diffMin / 60);
-    if (diffH < 24) return `${diffH} hr ago`;
+    if (diffH < 24) return `hace ${diffH} h`;
     const diffD = Math.round(diffH / 24);
-    if (diffD < 30) return `${diffD} d ago`;
+    if (diffD < 30) return `hace ${diffD} d`;
     return date.toLocaleDateString();
 }
 
@@ -51,7 +51,7 @@ export default function LastSeen({ userId, fallbackStatus, lastSeenAt, className
 
     // Offline / invisible — show last-seen.
     const seen = live?.lastSeen ?? lastSeenAt ?? null;
-    const text = seen ? `last seen ${relativeTime(seen)}` : 'offline';
+    const text = seen ? `visto ${relativeTime(seen)}` : 'desconectado';
     return (
         <span className={`text-[10px] text-fg-subtle ${className}`.trim()}>{text}</span>
     );

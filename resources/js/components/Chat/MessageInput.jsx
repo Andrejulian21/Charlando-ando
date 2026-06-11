@@ -42,7 +42,7 @@ export default function MessageInput({ serverId, channelId, disabled = false }) 
             );
             setValue('');
         } catch (err) {
-            setError(err?.response?.data?.message ?? 'Failed to send message.');
+            setError(err?.response?.data?.message ?? 'No se pudo enviar el mensaje.');
         } finally {
             setSending(false);
             textareaRef.current?.focus();
@@ -65,14 +65,14 @@ export default function MessageInput({ serverId, channelId, disabled = false }) 
                     onKeyDown={handleKeyDown}
                     rows={1}
                     disabled={disabled || sending}
-                    placeholder={disabled ? 'Connecting…' : 'Message #channel'}
-                    aria-label="Message"
+                    placeholder={disabled ? 'Conectando…' : `Mensaje en #${channelId}`}
+                    aria-label="Mensaje"
                     className="w-full resize-none bg-transparent px-3 py-2.5 text-sm text-fg placeholder-fg-subtle focus:outline-none disabled:opacity-50"
                 />
                 <div className="flex items-center justify-between border-t border-deep-space-600 px-3 py-1.5 text-[11px] text-fg-subtle">
                     <span>
-                        <kbd className="rounded bg-deep-space-600 px-1.5 py-0.5 text-[10px]">Enter</kbd> to send ·{' '}
-                        <kbd className="rounded bg-deep-space-600 px-1.5 py-0.5 text-[10px]">Shift+Enter</kbd> for new line
+                        <kbd className="rounded bg-deep-space-600 px-1.5 py-0.5 text-[10px]">Enter</kbd> para enviar ·{' '}
+                        <kbd className="rounded bg-deep-space-600 px-1.5 py-0.5 text-[10px]">Shift+Enter</kbd> nueva línea
                     </span>
                     <span>{value.length} / {MAX_LENGTH}</span>
                 </div>

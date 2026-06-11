@@ -13,7 +13,6 @@ use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 use Laravel\Socialite\Facades\Socialite;
-use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 /**
@@ -24,20 +23,20 @@ use Throwable;
 class OAuthController extends Controller
 {
     /** Providers we allow through the {provider} route parameter. */
-    private const ALLOWED_PROVIDERS = ['google', 'github', 'discord'];
+    private const ALLOWED_PROVIDERS = ['google', 'github'];
 
     public function __construct(private readonly JwtService $jwt)
     {
     }
 
-    public function redirect(string $provider): Response
+    public function redirect(string $provider): \Symfony\Component\HttpFoundation\RedirectResponse
     {
         $this->guardProvider($provider);
 
         return Socialite::driver($provider)->redirect();
     }
 
-    public function callback(Request $request, string $provider): Response
+    public function callback(Request $request, string $provider): RedirectResponse
     {
         $this->guardProvider($provider);
 

@@ -97,7 +97,7 @@ export default function ChatShow({
                         </>
                     ) : (
                         <div className="flex flex-1 items-center justify-center text-sm text-fg-muted">
-                            Select a channel to start chatting.
+                            Elige un canal para empezar a chatear.
                         </div>
                     )}
                 </main>

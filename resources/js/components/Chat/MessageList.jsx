@@ -32,7 +32,7 @@ function authorFor(message, memberLookup) {
     if (message.user) return message.user;
     const member = memberLookup.get(message.user_id);
     if (!member) {
-        return { id: message.user_id, name: 'Unknown', display_name: null, avatar_url: null };
+        return { id: message.user_id, name: 'Desconocido', display_name: null, avatar_url: null };
     }
     return member;
 }
@@ -169,7 +169,7 @@ export default function MessageList({
                     if (nextCursor == null) setHasMore(false);
                     setError(null);
                 } catch (err) {
-                    setError(err?.response?.data?.message ?? 'Failed to load older messages.');
+                    setError(err?.response?.data?.message ?? 'No se pudieron cargar los mensajes anteriores.');
                 } finally {
                     setLoadingMore(false);
                 }
@@ -204,21 +204,21 @@ export default function MessageList({
             <div ref={topSentinelRef} aria-hidden="true" className="h-2" />
 
             {loadingMore && (
-                <p className="px-4 py-2 text-center text-xs text-fg-subtle">Loading older messages…</p>
+                <p className="px-4 py-2 text-center text-xs text-fg-subtle">Cargando mensajes anteriores…</p>
             )}
             {error && (
                 <p className="px-4 py-2 text-center text-xs text-danger" role="alert">{error}</p>
             )}
             {!hasMore && messages.length > 0 && (
                 <p className="px-4 py-2 text-center text-[10px] uppercase tracking-wider text-fg-subtle">
-                    Beginning of #{channelId ?? 'conversation'}
+                    Inicio de #{channelId ?? 'la conversación'}
                 </p>
             )}
 
             <ol className="px-4 py-3">
                 {messages.length === 0 && !loadingMore && (
                     <li className="rounded-card border border-dashed border-deep-space-600 bg-deep-space-800/50 px-4 py-8 text-center text-sm text-fg-muted">
-                        No messages yet. Be the first to say hi.
+                        Aún no hay mensajes. Sé el primero en saludar.
                     </li>
                 )}
 
@@ -260,8 +260,8 @@ function MessageRow({ message, author, grouped, mine }) {
                             {formatTime(message.created_at)}
                         </time>
                         {message.edited_at && (
-                            <span className="text-[10px] text-fg-subtle" title={`Edited ${formatTime(message.edited_at)}`}>
-                                (edited)
+                            <span className="text-[10px] text-fg-subtle" title={`Editado ${formatTime(message.edited_at)}`}>
+                                (editado)
                             </span>
                         )}
                     </div>
