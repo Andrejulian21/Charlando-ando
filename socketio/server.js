@@ -26,6 +26,8 @@ const CORS_ORIGIN = process.env.SOCKETIO_CORS_ORIGIN || '*';
 const HEARTBEAT_INTERVAL_MS = Number(process.env.SOCKETIO_HEARTBEAT_MS) || 15_000;
 const PRESENCE_TTL_SECONDS = Number(process.env.SOCKETIO_PRESENCE_TTL_SEC) || 30;
 const IDLE_TIMEOUT_MS = Number(process.env.SOCKETIO_IDLE_TIMEOUT_MS) || 5 * 60_000;
+const LARAVEL_URL = process.env.SIDECAR_LARAVEL_URL || 'http://laravel.test';
+const SIDECAR_SECRET = process.env.SIDECAR_SECRET || '';
 const VALID_STATUSES = new Set(['online', 'idle', 'dnd', 'invisible']);
 const ROOM_PATTERN = /^(channel|dm):\d+$/;
 
@@ -201,6 +203,12 @@ io.on('connection', (socket) => {
         clearTimeout(idleTimer);
         publisher.del(presenceKey);
         broadcastPresence(io, publisher, userId, 'offline');
+
+        // Notify Laravel so it can update last_seen_at in the DB.
+        notifyLaravelDisconnect(userId).catch((err) => {
+            console.warn(`[presence] failed to notify Laravel for user ${userId}:`, err.message);
+        });
+
         console.log(`[socket] user ${userId} disconnected (${reason})`);
     });
 });
@@ -239,6 +247,29 @@ function broadcastPresence(io, redis, userId, status) {
     // Cross-instance fan-out so any sidecar holding shared rooms can forward
     // the change to channel / DM participants.
     redis.publish('presence', JSON.stringify({ userId, status, at: Date.now() }));
+}
+
+async function notifyLaravelDisconnect(userId) {
+    if (!SIDECAR_SECRET) {
+        console.warn('[presence] SIDECAR_SECRET not set — skipping Laravel disconnect notification');
+        return;
+    }
+
+    const url = `${LARAVEL_URL}/api/presence/disconnect`;
+    const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Sidecar-Secret': SIDECAR_SECRET,
+        },
+        body: JSON.stringify({ user_id: userId }),
+    });
+
+    if (!res.ok) {
+        const body = await res.text();
+        throw new Error(`Laravel returned ${res.status}: ${body}`);
+    }
 }
 
 // ---------------------------------------------------------------------------

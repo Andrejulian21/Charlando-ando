@@ -47,4 +47,11 @@ return [
         'idle_timeout_ms' => (int) env('SOCKETIO_IDLE_TIMEOUT_MS', 5 * 60_000),
     ],
 
+    'sidecar' => [
+        // Shared secret for sidecar -> Laravel API calls (e.g. presence disconnect).
+        'secret' => env('SIDECAR_SECRET'),
+        // Internal URL the sidecar uses to reach the Laravel API.
+        'laravel_url' => env('SIDECAR_LARAVEL_URL', 'http://laravel.test'),
+    ],
+
 ];
