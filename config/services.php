@@ -35,4 +35,16 @@ return [
         ],
     ],
 
+    'socketio' => [
+        // Public URL the browser uses to reach the Socket.io sidecar.
+        'url' => env('SOCKETIO_URL', 'http://localhost:3000'),
+        // Comma-separated allowed origins, or `*`. Forwarded to the sidecar
+        // so it can build its CORS allow-list.
+        'cors_origin' => env('SOCKETIO_CORS_ORIGIN', '*'),
+        // Presence + heartbeat tuning forwarded to the sidecar at boot.
+        'heartbeat_ms' => (int) env('SOCKETIO_HEARTBEAT_MS', 15_000),
+        'presence_ttl_sec' => (int) env('SOCKETIO_PRESENCE_TTL_SEC', 30),
+        'idle_timeout_ms' => (int) env('SOCKETIO_IDLE_TIMEOUT_MS', 5 * 60_000),
+    ],
+
 ];
