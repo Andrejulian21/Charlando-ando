@@ -70,6 +70,10 @@ export const useChatStore = create((set, get) => ({
      * Append a single message to the room it belongs to. Used both by the
      * WebSocket listener and (occasionally) by initial page loads that
      * hydrate a channel's tail via the Inertia props.
+     *
+     * Messages are stored in ASC order (oldest first, newest last) so the
+     * UI can render them in document order without reversing. New messages
+     * therefore go to the end of the array.
      */
     addMessage: (message) => {
         if (!message || !message.room) return;
@@ -84,21 +88,35 @@ export const useChatStore = create((set, get) => ({
     },
 
     /**
-     * Hydrate a full page of messages (oldest first within the page). Used
-     * by MessageList when the IntersectionObserver fires.
+     * Hydrate a full page of older messages at the top of the room. The
+     * server returns messages in DESC order (newest first) within a page;
+     * we reverse to ASC so the merged list stays in chronological order.
+     * Used by MessageList when the IntersectionObserver fires.
      */
     prependMessages: (room, page) => {
         if (!room || !Array.isArray(page) || page.length === 0) return;
         const { messages } = get();
         const existing = messages.get(room) ?? [];
         const existingIds = new Set(existing.map((m) => m.id));
-        const fresh = page.filter((m) => !existingIds.has(m.id));
-        if (fresh.length === 0) return;
+        // Reverse the page (server returns DESC) and filter duplicates.
+        const freshAsc = page.slice().reverse().filter((m) => !existingIds.has(m.id));
+        if (freshAsc.length === 0) return;
         const next = new Map(messages);
-        // Pages arrive newest-first from the server; prepending means we
-        // want the older messages at the top, so the merged list is
-        // [...fresh, ...existing].
-        next.set(room, [...fresh, ...existing]);
+        // Older messages go to the start of the ASC list.
+        next.set(room, [...freshAsc, ...existing]);
+        set({ messages: next });
+    },
+
+    /**
+     * Replace the messages for a room outright. Useful for initial hydration
+     * from Inertia props where we want to discard whatever the store
+     * already had and use the server-rendered snapshot.
+     */
+    setMessages: (room, list) => {
+        if (!room) return;
+        const next = new Map(get().messages);
+        const asc = Array.isArray(list) ? list.slice().reverse() : [];
+        next.set(room, asc);
         set({ messages: next });
     },
 
