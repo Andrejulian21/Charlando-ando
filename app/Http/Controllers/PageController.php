@@ -22,7 +22,9 @@ class PageController extends Controller
 
     public function login(): Response
     {
-        return Inertia::render('Auth/Login');
+        return Inertia::render('Auth/Login', [
+            'devLogin' => app()->environment('local'),
+        ]);
     }
 
     public function chatIndex(Request $request): Response

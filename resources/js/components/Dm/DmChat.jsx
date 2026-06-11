@@ -41,7 +41,7 @@ export default function DmChat({ dm, messages = [], nextCursor = null, currentUs
     if (!dm || !other) {
         return (
             <div className="flex flex-1 items-center justify-center text-sm text-fg-muted">
-                Select a conversation to start chatting.
+                Elige una conversación para empezar a chatear.
             </div>
         );
     }
@@ -102,7 +102,7 @@ function DmComposer({ dmId, disabled }) {
             await window.axios.post(`/api/dms/${dmId}/messages`, { content });
             setValue('');
         } catch (err) {
-            setError(err?.response?.data?.message ?? 'Failed to send message.');
+            setError(err?.response?.data?.message ?? 'No se pudo enviar el mensaje.');
         } finally {
             setSending(false);
             taRef.current?.focus();
@@ -130,14 +130,14 @@ function DmComposer({ dmId, disabled }) {
                     }}
                     rows={1}
                     disabled={disabled || sending}
-                    placeholder={disabled ? 'Connecting…' : 'Message'}
-                    aria-label="Message"
+                    placeholder={disabled ? 'Conectando…' : 'Mensaje'}
+                    aria-label="Mensaje"
                     className="w-full resize-none bg-transparent px-3 py-2.5 text-sm text-fg placeholder-fg-subtle focus:outline-none disabled:opacity-50"
                 />
                 <div className="flex items-center justify-between border-t border-deep-space-600 px-3 py-1.5 text-[11px] text-fg-subtle">
                     <span>
-                        <kbd className="rounded bg-deep-space-600 px-1.5 py-0.5 text-[10px]">Enter</kbd> to send ·{' '}
-                        <kbd className="rounded bg-deep-space-600 px-1.5 py-0.5 text-[10px]">Shift+Enter</kbd> for new line
+                        <kbd className="rounded bg-deep-space-600 px-1.5 py-0.5 text-[10px]">Enter</kbd> para enviar ·{' '}
+                        <kbd className="rounded bg-deep-space-600 px-1.5 py-0.5 text-[10px]">Shift+Enter</kbd> nueva línea
                     </span>
                     <span>{value.length} / {MAX_LENGTH}</span>
                 </div>

@@ -9,10 +9,10 @@ import { setStatus as setSocketStatus } from '../../echo';
 import { useChatStore } from '../../stores/useChatStore';
 
 const STATUSES = [
-    { value: 'online', label: 'Online', description: 'You appear as available.' },
-    { value: 'idle', label: 'Idle', description: 'Yellow dot — you are away.' },
-    { value: 'dnd', label: 'Do not disturb', description: 'Red dot — no pings please.' },
-    { value: 'invisible', label: 'Invisible', description: 'Appear offline to others.' },
+    { value: 'online', label: 'En línea', description: 'Apareces como disponible.' },
+    { value: 'idle', label: 'Ausente', description: 'Punto amarillo — estás lejos.' },
+    { value: 'dnd', label: 'No molestar', description: 'Punto rojo — sin notificaciones por favor.' },
+    { value: 'invisible', label: 'Invisible', description: 'Apareces sin conexión para los demás.' },
 ];
 
 const NAME_MIN = 2;
@@ -37,12 +37,12 @@ export default function UserSettings({ user }) {
 
     const trimmedName = displayName.trim();
     const nameError = trimmedName.length < NAME_MIN
-        ? `Display name must be at least ${NAME_MIN} characters.`
+        ? `El nombre debe tener al menos ${NAME_MIN} caracteres.`
         : trimmedName.length > NAME_MAX
-            ? `Display name must be at most ${NAME_MAX} characters.`
+            ? `El nombre debe tener máximo ${NAME_MAX} caracteres.`
             : null;
     const avatarError = avatarUrl && avatarUrl.length > AVATAR_MAX
-        ? `Avatar URL is too long.`
+        ? `La URL del avatar es demasiado larga.`
         : null;
     const canSave = !saving && !nameError && !avatarError;
 
@@ -69,9 +69,9 @@ export default function UserSettings({ user }) {
             const validationErrors = err?.response?.data?.errors;
             if (validationErrors) {
                 const firstField = Object.values(validationErrors)[0]?.[0];
-                setError(firstField ?? 'Failed to save settings.');
+                setError(firstField ?? 'No se pudieron guardar los cambios.');
             } else {
-                setError(err?.response?.data?.message ?? 'Failed to save settings.');
+                setError(err?.response?.data?.message ?? 'No se pudieron guardar los cambios.');
             }
         } finally {
             setSaving(false);
@@ -80,10 +80,10 @@ export default function UserSettings({ user }) {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-8">
-            <section className="rounded-card border border-deep-space-600 bg-deep-space-800 p-6">
-                <h2 className="font-display text-lg font-semibold text-fg">Profile</h2>
+            <section className="rounded-card border border-deep-space-700/60 bg-deep-space-800/70 p-6 backdrop-blur-sm">
+                <h2 className="font-display text-lg font-semibold text-fg">Perfil</h2>
                 <p className="mt-1 text-sm text-fg-muted">
-                    How you appear in servers and direct messages.
+                    Cómo apareces en servidores y mensajes directos.
                 </p>
 
                 <div className="mt-6 flex items-center gap-4">
@@ -93,7 +93,7 @@ export default function UserSettings({ user }) {
                     />
                     <div className="min-w-0 flex-1 space-y-3">
                         <Field
-                            label="Display name"
+                            label="Nombre para mostrar"
                             htmlFor="display_name"
                             error={nameError}
                             hint={`${trimmedName.length} / ${NAME_MAX}`}
@@ -108,17 +108,17 @@ export default function UserSettings({ user }) {
                             />
                         </Field>
                         <Field
-                            label="Avatar URL"
+                            label="URL del avatar"
                             htmlFor="avatar_url"
                             error={avatarError}
-                            hint="Square image works best. Leave blank for initials."
+                            hint="Imagen cuadrada. Déjalo vacío para usar iniciales."
                         >
                             <input
                                 id="avatar_url"
                                 type="url"
                                 value={avatarUrl}
                                 onChange={(e) => setAvatarUrl(e.target.value)}
-                                placeholder="https://example.com/avatar.png"
+                                placeholder="https://ejemplo.com/avatar.png"
                                 className={inputClass(avatarError)}
                             />
                         </Field>
@@ -126,14 +126,14 @@ export default function UserSettings({ user }) {
                 </div>
             </section>
 
-            <section className="rounded-card border border-deep-space-600 bg-deep-space-800 p-6">
-                <h2 className="font-display text-lg font-semibold text-fg">Status</h2>
+            <section className="rounded-card border border-deep-space-700/60 bg-deep-space-800/70 p-6 backdrop-blur-sm">
+                <h2 className="font-display text-lg font-semibold text-fg">Estado</h2>
                 <p className="mt-1 text-sm text-fg-muted">
-                    Set how you appear to other members. Idle is automatic after 5 minutes of inactivity.
+                    Define cómo te ven los demás. Ausente se activa tras 5 minutos de inactividad.
                 </p>
 
                 <fieldset className="mt-4 space-y-2">
-                    <legend className="sr-only">Presence status</legend>
+                    <legend className="sr-only">Estado de presencia</legend>
                     {STATUSES.map((option) => (
                         <label
                             key={option.value}
@@ -163,14 +163,14 @@ export default function UserSettings({ user }) {
             <footer className="flex items-center justify-between gap-4">
                 <div>
                     {error && <p role="alert" className="text-sm text-danger">{error}</p>}
-                    {saved && !error && <p className="text-sm text-success">Saved.</p>}
+                    {saved && !error && <p className="text-sm text-success">Guardado.</p>}
                 </div>
                 <button
                     type="submit"
                     disabled={!canSave}
-                    className="rounded-button bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover active:bg-primary-active disabled:opacity-50"
+                    className="rounded-button bg-primary px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-all hover:-translate-y-px hover:bg-primary-hover hover:shadow-primary/40 active:translate-y-0 active:bg-primary-active disabled:translate-y-0 disabled:opacity-50"
                 >
-                    {saving ? 'Saving…' : 'Save changes'}
+                    {saving ? 'Guardando…' : 'Guardar cambios'}
                 </button>
             </footer>
         </form>
@@ -195,7 +195,7 @@ function Field({ label, htmlFor, hint, error, children }) {
 
 function inputClass(error) {
     return [
-        'w-full rounded-button border bg-deep-space-700 px-3 py-2 text-sm text-fg placeholder-fg-subtle focus:outline-none',
+        'w-full rounded-button border bg-deep-space-700 px-3 py-2 text-sm text-fg placeholder-fg-subtle focus:outline-none transition-colors',
         error ? 'border-danger focus:border-danger' : 'border-deep-space-600 focus:border-primary',
     ].join(' ');
 }

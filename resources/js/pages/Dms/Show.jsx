@@ -8,7 +8,7 @@ import DmChat from '../../components/Dm/DmChat';
 export default function DmsShow({ dm, messages = [], nextCursor = null, currentUserId, threads = [] }) {
     return (
         <>
-            <Head title="Direct Message" />
+            <Head title="Mensaje directo" />
 
             <div className="flex h-screen w-screen overflow-hidden bg-deep-space-900 text-fg">
                 <DmList threads={threads} currentUserId={currentUserId} activeDmId={dm?.id} />

@@ -19,7 +19,7 @@ export default function ChatHeader({ channel, server }) {
             </div>
             {server && (
                 <span className="hidden text-xs text-fg-subtle sm:inline">
-                    in <span className="text-fg-muted">{server.name}</span>
+                    en <span className="text-fg-muted">{server.name}</span>
                 </span>
             )}
         </header>

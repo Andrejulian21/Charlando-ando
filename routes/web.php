@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\DevLoginController;
 use App\Http\Controllers\Auth\OAuthController;
 use App\Http\Controllers\PageController;
 use Illuminate\Support\Facades\Route;
@@ -8,16 +9,18 @@ use Inertia\Inertia;
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'appName' => config('app.name', 'Charlando-ando'),
+        'canLogin' => true,
     ]);
 });
 
-// OAuth flow — must be reachable while logged out.
+// OAuth flow — reachable while logged out. Discord is intentionally NOT
+// supported; the controller rejects it via guardProvider().
 Route::get('/auth/{provider}/redirect', [OAuthController::class, 'redirect'])
-    ->where('provider', 'google|github|discord')
+    ->where('provider', 'google|github')
     ->name('oauth.redirect');
 
 Route::get('/auth/{provider}/callback', [OAuthController::class, 'callback'])
-    ->where('provider', 'google|github|discord')
+    ->where('provider', 'google|github')
     ->name('oauth.callback');
 
 // Frontend Inertia page that consumes the session-stashed OAuth result.
@@ -29,6 +32,13 @@ Route::get('/auth/callback', [OAuthController::class, 'callbackPage'])
 // Public login page.
 Route::get('/login', [PageController::class, 'login'])
     ->name('login');
+
+// Development-only auth routes (disabled in production).
+// The DevLoginController aborts with 404 when APP_ENV != local.
+Route::get('/dev-login', [DevLoginController::class, 'showLogin'])->name('dev.login');
+Route::post('/dev-login', [DevLoginController::class, 'login']);
+Route::get('/dev-register', [DevLoginController::class, 'showRegister'])->name('dev.register');
+Route::post('/dev-register', [DevLoginController::class, 'register']);
 
 // Authenticated SPA shell.
 Route::middleware('auth')->group(function (): void {

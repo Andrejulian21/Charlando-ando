@@ -12,9 +12,9 @@ import UserAvatar from '../Presence/UserAvatar';
 import { router } from '@inertiajs/react';
 
 const TABS = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'members', label: 'Members' },
-    { id: 'invites', label: 'Invites' },
+    { id: 'overview', label: 'General' },
+    { id: 'members', label: 'Miembros' },
+    { id: 'invites', label: 'Invitaciones' },
 ];
 
 export default function ServerSettings({ server }) {
@@ -22,7 +22,7 @@ export default function ServerSettings({ server }) {
 
     return (
         <div className="space-y-6">
-            <nav className="flex gap-1 border-b border-deep-space-700" aria-label="Server settings tabs">
+            <nav className="flex gap-1 border-b border-deep-space-700" aria-label="Pestañas de configuración del servidor">
                 {TABS.map((t) => (
                     <button
                         key={t.id}
@@ -69,46 +69,46 @@ function OverviewTab({ server }) {
             setSaved(true);
             router.reload({ only: ['server'] });
         } catch (err) {
-            setError(err?.response?.data?.message ?? 'Failed to save server settings.');
+            setError(err?.response?.data?.message ?? 'No se pudieron guardar los ajustes del servidor.');
         } finally {
             setSaving(false);
         }
     };
 
     return (
-        <form onSubmit={handleSubmit} className="rounded-card border border-deep-space-600 bg-deep-space-800 p-6">
-            <h2 className="font-display text-lg font-semibold text-fg">Overview</h2>
-            <p className="mt-1 text-sm text-fg-muted">Rename, rebrand, or describe this server.</p>
+        <form onSubmit={handleSubmit} className="rounded-card border border-deep-space-700/60 bg-deep-space-800/70 p-6 backdrop-blur-sm">
+            <h2 className="font-display text-lg font-semibold text-fg">General</h2>
+            <p className="mt-1 text-sm text-fg-muted">Renombra, redecora o describe este servidor.</p>
 
             <div className="mt-6 grid gap-4">
-                <FormField label="Name" htmlFor="server-name">
+                <FormField label="Nombre" htmlFor="server-name">
                     <input
                         id="server-name"
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         maxLength={64}
-                        className="w-full rounded-button border border-deep-space-600 bg-deep-space-700 px-3 py-2 text-sm text-fg focus:border-primary focus:outline-none"
+                        className="w-full rounded-button border border-deep-space-600 bg-deep-space-700 px-3 py-2 text-sm text-fg transition-colors focus:border-primary focus:outline-none"
                     />
                 </FormField>
-                <FormField label="Icon URL" htmlFor="server-icon" hint="Square image, 256×256 recommended.">
+                <FormField label="URL del ícono" htmlFor="server-icon" hint="Imagen cuadrada, se recomienda 256×256.">
                     <input
                         id="server-icon"
                         type="url"
                         value={iconUrl}
                         onChange={(e) => setIconUrl(e.target.value)}
-                        placeholder="https://example.com/icon.png"
-                        className="w-full rounded-button border border-deep-space-600 bg-deep-space-700 px-3 py-2 text-sm text-fg placeholder-fg-subtle focus:border-primary focus:outline-none"
+                        placeholder="https://ejemplo.com/icono.png"
+                        className="w-full rounded-button border border-deep-space-600 bg-deep-space-700 px-3 py-2 text-sm text-fg placeholder-fg-subtle transition-colors focus:border-primary focus:outline-none"
                     />
                 </FormField>
-                <FormField label="Description" htmlFor="server-desc" hint="Up to 1000 characters.">
+                <FormField label="Descripción" htmlFor="server-desc" hint="Hasta 1000 caracteres.">
                     <textarea
                         id="server-desc"
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                         rows={3}
                         maxLength={1000}
-                        className="w-full resize-y rounded-button border border-deep-space-600 bg-deep-space-700 px-3 py-2 text-sm text-fg placeholder-fg-subtle focus:border-primary focus:outline-none"
+                        className="w-full resize-y rounded-button border border-deep-space-600 bg-deep-space-700 px-3 py-2 text-sm text-fg placeholder-fg-subtle transition-colors focus:border-primary focus:outline-none"
                     />
                 </FormField>
             </div>
@@ -116,14 +116,14 @@ function OverviewTab({ server }) {
             <footer className="mt-6 flex items-center justify-between gap-4">
                 <div>
                     {error && <p role="alert" className="text-sm text-danger">{error}</p>}
-                    {saved && !error && <p className="text-sm text-success">Saved.</p>}
+                    {saved && !error && <p className="text-sm text-success">Guardado.</p>}
                 </div>
                 <button
                     type="submit"
                     disabled={saving}
-                    className="rounded-button bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover active:bg-primary-active disabled:opacity-50"
+                    className="rounded-button bg-primary px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-all hover:-translate-y-px hover:bg-primary-hover hover:shadow-primary/40 active:translate-y-0 active:bg-primary-active disabled:translate-y-0 disabled:opacity-50"
                 >
-                    {saving ? 'Saving…' : 'Save changes'}
+                    {saving ? 'Guardando…' : 'Guardar cambios'}
                 </button>
             </footer>
         </form>
@@ -137,40 +137,38 @@ function MembersTab({ server }) {
     const members = server?.members ?? [];
 
     const handleKick = async (member) => {
-        if (!window.confirm(`Remove ${member.display_name || member.name} from this server?`)) return;
+        if (!window.confirm(`¿Expulsar a ${member.display_name || member.name} de este servidor?`)) return;
         setActing(member.id);
         setError(null);
         try {
             await window.axios.delete(`/api/servers/${server.id}/members/${member.id}`);
             router.reload({ only: ['server'] });
         } catch (err) {
-            setError(err?.response?.data?.message ?? 'Failed to remove member.');
+            setError(err?.response?.data?.message ?? 'No se pudo expulsar al miembro.');
         } finally {
             setActing(null);
         }
     };
 
     const handleBan = async (member) => {
-        if (!window.confirm(`Ban ${member.display_name || member.name}? They will not be able to rejoin with the same invite.`)) return;
+        if (!window.confirm(`¿Banear a ${member.display_name || member.name}? No podrá volver a unirse con la misma invitación.`)) return;
         setActing(member.id);
         setError(null);
         try {
             await window.axios.post(`/api/servers/${server.id}/bans`, { user_id: member.id });
             router.reload({ only: ['server'] });
         } catch (err) {
-            // The ban endpoint may not exist yet — surface the error
-            // honestly so the operator knows.
-            setError(err?.response?.data?.message ?? 'Failed to ban member.');
+            setError(err?.response?.data?.message ?? 'No se pudo banear al miembro.');
         } finally {
             setActing(null);
         }
     };
 
     return (
-        <section className="rounded-card border border-deep-space-600 bg-deep-space-800 p-6">
+        <section className="rounded-card border border-deep-space-700/60 bg-deep-space-800/70 p-6 backdrop-blur-sm">
             <header className="flex items-center justify-between">
-                <h2 className="font-display text-lg font-semibold text-fg">Members</h2>
-                <span className="text-xs text-fg-subtle">{members.length} total</span>
+                <h2 className="font-display text-lg font-semibold text-fg">Miembros</h2>
+                <span className="text-xs text-fg-subtle">{members.length} en total</span>
             </header>
 
             {error && <p role="alert" className="mt-3 text-sm text-danger">{error}</p>}
@@ -190,23 +188,23 @@ function MembersTab({ server }) {
                                 type="button"
                                 onClick={() => handleKick(member)}
                                 disabled={acting === member.id}
-                                className="rounded-button border border-deep-space-600 bg-deep-space-700 px-3 py-1 text-xs text-fg-muted hover:bg-deep-space-600 hover:text-fg disabled:opacity-50"
+                                className="rounded-button border border-deep-space-600 bg-deep-space-700 px-3 py-1 text-xs text-fg-muted transition-colors hover:bg-deep-space-600 hover:text-fg disabled:opacity-50"
                             >
-                                {acting === member.id ? 'Working…' : 'Kick'}
+                                {acting === member.id ? 'Procesando…' : 'Expulsar'}
                             </button>
                             <button
                                 type="button"
                                 onClick={() => handleBan(member)}
                                 disabled={acting === member.id}
-                                className="rounded-button border border-danger/40 bg-danger/10 px-3 py-1 text-xs text-danger hover:bg-danger/20 disabled:opacity-50"
+                                className="rounded-button border border-danger/40 bg-danger/10 px-3 py-1 text-xs text-danger transition-colors hover:bg-danger/20 disabled:opacity-50"
                             >
-                                Ban
+                                Banear
                             </button>
                         </div>
                     </li>
                 ))}
                 {members.length === 0 && (
-                    <li className="py-4 text-center text-sm text-fg-subtle">No members yet.</li>
+                    <li className="py-4 text-center text-sm text-fg-subtle">Aún no hay miembros.</li>
                 )}
             </ul>
         </section>
@@ -229,19 +227,19 @@ function InvitesTab({ server }) {
             setNewCode(data?.code ?? '');
             router.reload({ only: ['server'] });
         } catch (err) {
-            setError(err?.response?.data?.message ?? 'Failed to create invite.');
+            setError(err?.response?.data?.message ?? 'No se pudo crear la invitación.');
         } finally {
             setCreating(false);
         }
     };
 
     const handleRevoke = async (invite) => {
-        if (!window.confirm(`Revoke invite ${invite.code}?`)) return;
+        if (!window.confirm(`¿Revocar la invitación ${invite.code}?`)) return;
         try {
             await window.axios.delete(`/api/servers/${server.id}/invites/${invite.id}`);
             router.reload({ only: ['server'] });
         } catch (err) {
-            setError(err?.response?.data?.message ?? 'Failed to revoke invite.');
+            setError(err?.response?.data?.message ?? 'No se pudo revocar la invitación.');
         }
     };
 
@@ -250,16 +248,16 @@ function InvitesTab({ server }) {
         : null;
 
     return (
-        <section className="rounded-card border border-deep-space-600 bg-deep-space-800 p-6">
+        <section className="rounded-card border border-deep-space-700/60 bg-deep-space-800/70 p-6 backdrop-blur-sm">
             <header className="flex items-center justify-between">
-                <h2 className="font-display text-lg font-semibold text-fg">Invites</h2>
+                <h2 className="font-display text-lg font-semibold text-fg">Invitaciones</h2>
                 <button
                     type="button"
                     onClick={handleCreate}
                     disabled={creating}
-                    className="rounded-button bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-hover active:bg-primary-active disabled:opacity-50"
+                    className="rounded-button bg-primary px-3 py-1.5 text-xs font-semibold text-white shadow-lg shadow-primary/25 transition-all hover:-translate-y-px hover:bg-primary-hover hover:shadow-primary/40 active:translate-y-0 active:bg-primary-active disabled:translate-y-0 disabled:opacity-50"
                 >
-                    {creating ? 'Creating…' : 'New invite'}
+                    {creating ? 'Creando…' : 'Nueva invitación'}
                 </button>
             </header>
 
@@ -267,7 +265,7 @@ function InvitesTab({ server }) {
 
             {fullUrl && (
                 <div className="mt-3 rounded-card border border-success/40 bg-success/10 p-3 text-sm">
-                    <p className="text-success">Invite created.</p>
+                    <p className="text-success">Invitación creada.</p>
                     <code className="mt-1 block break-all text-fg">{fullUrl}</code>
                 </div>
             )}
@@ -284,14 +282,14 @@ function InvitesTab({ server }) {
                         <button
                             type="button"
                             onClick={() => handleRevoke(invite)}
-                            className="rounded-button border border-deep-space-600 bg-deep-space-700 px-3 py-1 text-xs text-fg-muted hover:bg-deep-space-600 hover:text-fg"
+                            className="rounded-button border border-deep-space-600 bg-deep-space-700 px-3 py-1 text-xs text-fg-muted transition-colors hover:bg-deep-space-600 hover:text-fg"
                         >
-                            Revoke
+                            Revocar
                         </button>
                     </li>
                 ))}
                 {invites.length === 0 && (
-                    <li className="py-4 text-center text-sm text-fg-subtle">No active invites.</li>
+                    <li className="py-4 text-center text-sm text-fg-subtle">No hay invitaciones activas.</li>
                 )}
             </ul>
         </section>

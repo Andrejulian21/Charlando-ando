@@ -47,10 +47,10 @@ export default function ChannelList({ server, activeChannelId }) {
     if (!server) {
         return (
             <aside
-                aria-label="Channels"
+                aria-label="Canales"
                 className="flex w-60 shrink-0 flex-col items-center justify-center border-r border-deep-space-700 bg-deep-space-800 p-4 text-center text-sm text-fg-subtle"
             >
-                Pick a server from the left to start chatting.
+                Elige un servidor a la izquierda para empezar a chatear.
             </aside>
         );
     }
@@ -61,7 +61,7 @@ export default function ChannelList({ server, activeChannelId }) {
 
     return (
         <aside
-            aria-label={`Channels for ${server.name}`}
+            aria-label={`Canales de ${server.name}`}
             className="flex w-60 shrink-0 flex-col border-r border-deep-space-700 bg-deep-space-800"
         >
             <header className="flex h-14 items-center border-b border-deep-space-700 px-4">
@@ -70,14 +70,14 @@ export default function ChannelList({ server, activeChannelId }) {
 
             <div className="flex-1 overflow-y-auto px-2 py-3">
                 <ChannelGroup
-                    label="Text channels"
+                    label="Canales de texto"
                     channels={textChannels}
                     activeChannelId={activeChannelId}
                     serverId={server.id}
                 />
                 {voiceChannels.length > 0 && (
                     <ChannelGroup
-                        label="Voice channels"
+                        label="Canales de voz"
                         channels={voiceChannels}
                         activeChannelId={activeChannelId}
                         serverId={server.id}
@@ -100,7 +100,7 @@ function ChannelGroup({ label, channels, activeChannelId, serverId }) {
                 {label}
             </h3>
             {channels.length === 0 ? (
-                <p className="px-2 text-xs text-fg-subtle">No channels yet.</p>
+                <p className="px-2 text-xs text-fg-subtle">Aún no hay canales.</p>
             ) : (
                 <ul className="space-y-0.5">
                     {channels.map((channel) => (
@@ -121,16 +121,18 @@ function UserBar({ user }) {
     if (!user) {
         return (
             <footer className="flex h-14 items-center justify-between border-t border-deep-space-700 px-3 text-xs text-fg-subtle">
-                <span>Not signed in</span>
-                <Link href="/login" className="rounded-button bg-primary px-3 py-1 text-xs font-medium text-white hover:bg-primary-hover">Sign in</Link>
+                <span>Sin sesión</span>
+                <Link href="/login" className="rounded-button bg-primary px-3 py-1 text-xs font-semibold text-white shadow-lg shadow-primary/20 transition-colors hover:bg-primary-hover">
+                    Iniciar sesión
+                </Link>
             </footer>
         );
     }
     return (
         <footer className="flex h-14 items-center justify-between border-t border-deep-space-700 px-3 text-xs text-fg-muted">
             <span className="truncate">{user.display_name || user.name}</span>
-            <Link href="/settings" className="rounded-button bg-deep-space-700 px-2 py-1 text-[11px] font-medium text-fg-muted hover:bg-deep-space-600 hover:text-fg">
-                Settings
+            <Link href="/settings" className="rounded-button bg-deep-space-700 px-2 py-1 text-[11px] font-medium text-fg-muted transition-colors hover:bg-deep-space-600 hover:text-fg">
+                Configuración
             </Link>
         </footer>
     );

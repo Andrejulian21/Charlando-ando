@@ -23,7 +23,7 @@ function MemberRow({ member, currentUserId }) {
                     <p className="truncate text-sm text-fg-muted">
                         {member.display_name || member.name}
                         {Number(member.id) === Number(currentUserId) && (
-                            <span className="ml-1 text-[10px] text-fg-subtle">(you)</span>
+                            <span className="ml-1 text-[10px] text-fg-subtle">(tú)</span>
                         )}
                     </p>
                     <LastSeen
@@ -46,7 +46,7 @@ export default function MemberList({ members = [], currentUserId }) {
             <button
                 type="button"
                 onClick={() => setCollapsed(false)}
-                aria-label="Show member list"
+                aria-label="Mostrar lista de miembros"
                 className="flex w-8 shrink-0 items-center justify-center border-l border-deep-space-700 bg-deep-space-800 text-fg-muted hover:text-fg"
             >
                 <svg aria-hidden="true" viewBox="0 0 20 20" className="h-4 w-4 fill-current">
@@ -68,17 +68,17 @@ export default function MemberList({ members = [], currentUserId }) {
 
     return (
         <aside
-            aria-label="Member list"
+            aria-label="Lista de miembros"
             className="flex w-60 shrink-0 flex-col border-l border-deep-space-700 bg-deep-space-800"
         >
             <header className="flex h-14 items-center justify-between border-b border-deep-space-700 px-4">
                 <h2 className="text-xs font-semibold uppercase tracking-wider text-fg-muted">
-                    Members — {members.length}
+                    Miembros — {members.length}
                 </h2>
                 <button
                     type="button"
                     onClick={() => setCollapsed(true)}
-                    aria-label="Hide member list"
+                    aria-label="Ocultar lista de miembros"
                     className="rounded-md p-1 text-fg-muted hover:bg-deep-space-700 hover:text-fg"
                 >
                     <svg aria-hidden="true" viewBox="0 0 20 20" className="h-4 w-4 fill-current">
@@ -91,7 +91,7 @@ export default function MemberList({ members = [], currentUserId }) {
                 {online.length > 0 && (
                     <section className="mb-3">
                         <h3 className="mb-1 px-2 text-[11px] font-semibold uppercase tracking-wider text-fg-subtle">
-                            Online — {online.length}
+                            En línea — {online.length}
                         </h3>
                         <ul className="space-y-0.5">
                             {online.map((m) => (
@@ -104,7 +104,7 @@ export default function MemberList({ members = [], currentUserId }) {
                 {offline.length > 0 && (
                     <section>
                         <h3 className="mb-1 px-2 text-[11px] font-semibold uppercase tracking-wider text-fg-subtle">
-                            Offline — {offline.length}
+                            Desconectados — {offline.length}
                         </h3>
                         <ul className="space-y-0.5 opacity-70">
                             {offline.map((m) => (
@@ -115,7 +115,7 @@ export default function MemberList({ members = [], currentUserId }) {
                 )}
 
                 {members.length === 0 && (
-                    <p className="px-2 text-xs text-fg-subtle">No members yet.</p>
+                    <p className="px-2 text-xs text-fg-subtle">Aún no hay miembros.</p>
                 )}
             </div>
         </aside>

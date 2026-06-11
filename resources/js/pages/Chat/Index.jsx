@@ -59,13 +59,13 @@ export default function ChatIndex({ servers = [], auth }) {
                 <main className="flex flex-1 flex-col items-center justify-center px-6 text-center">
                     {servers.length === 0 ? (
                         <EmptyState
-                            title="No servers yet"
-                            description="You have not been added to a server. Ask a friend for an invite link, or check back soon."
+                            title="Aún no tienes servidores"
+                            description="Pide a alguien una invitación o espera a que te sumen a uno."
                         />
                     ) : (
                         <EmptyState
-                            title="Welcome to Charlando-ando"
-                            description="Pick a channel on the left to start chatting. We'll route you automatically."
+                            title="Bienvenido a Charlando-ando"
+                            description="Elige un canal de la izquierda para empezar a chatear. Te llevamos automáticamente."
                         />
                     )}
                 </main>
@@ -79,8 +79,8 @@ export default function ChatIndex({ servers = [], auth }) {
 function EmptyState({ title, description }) {
     return (
         <div className="max-w-md space-y-3">
-            <h1 className="font-display text-2xl font-semibold text-fg">{title}</h1>
-            <p className="text-sm text-fg-muted">{description}</p>
+            <h1 className="font-display text-2xl font-semibold tracking-tight text-fg">{title}</h1>
+            <p className="text-sm leading-relaxed text-fg-muted">{description}</p>
         </div>
     );
 }

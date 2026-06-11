@@ -47,7 +47,7 @@ export default function UserAvatar({ user, size = 'md', showPresence = true, cla
     return (
         <span
             className={`relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-deep-space-600 font-semibold text-fg ${sizeClass} ${className}`.trim()}
-            aria-label={user.display_name || user.name || 'User avatar'}
+            aria-label={user.display_name || user.name || 'Avatar de usuario'}
         >
             {user.avatar_url ? (
                 <img
