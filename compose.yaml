@@ -74,6 +74,8 @@ services:
         environment:
             REDIS_URL: 'redis://redis:6379'
             JWT_SECRET: '${APP_KEY}'
+            SIDECAR_SECRET: '${SIDECAR_SECRET}'
+            SIDECAR_LARAVEL_URL: 'http://laravel.test'
             PORT: 3000
         volumes:
             - './socketio:/app'

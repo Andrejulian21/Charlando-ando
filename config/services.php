@@ -53,4 +53,17 @@ return [
         'redirect' => env('DISCORD_REDIRECT_URI'),
     ],
 
+    'socketio' => [
+        'url' => env('SOCKETIO_URL', 'http://localhost:3000'),
+        'cors_origin' => env('SOCKETIO_CORS_ORIGIN', '*'),
+        'heartbeat_ms' => (int) env('SOCKETIO_HEARTBEAT_MS', 15_000),
+        'presence_ttl_sec' => (int) env('SOCKETIO_PRESENCE_TTL_SEC', 30),
+        'idle_timeout_ms' => (int) env('SOCKETIO_IDLE_TIMEOUT_MS', 5 * 60_000),
+    ],
+
+    'sidecar' => [
+        'secret' => env('SIDECAR_SECRET'),
+        'laravel_url' => env('SIDECAR_LARAVEL_URL', 'http://laravel.test'),
+    ],
+
 ];

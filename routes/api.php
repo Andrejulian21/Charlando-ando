@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Messages\MessageController;
+use App\Http\Controllers\PresenceController;
 use App\Http\Controllers\Servers\ChannelController;
 use App\Http\Controllers\Servers\InviteController;
 use App\Http\Controllers\Servers\RoleController;
@@ -51,3 +52,6 @@ Route::middleware('auth')->group(function (): void {
     Route::patch('servers/{server}/roles/{role}', [RoleController::class, 'update'])->name('api.servers.roles.update');
     Route::delete('servers/{server}/roles/{role}', [RoleController::class, 'destroy'])->name('api.servers.roles.destroy');
 });
+
+// Sidecar-only endpoints (authenticated via X-Sidecar-Secret header).
+Route::post('/presence/disconnect', [PresenceController::class, 'disconnect']);

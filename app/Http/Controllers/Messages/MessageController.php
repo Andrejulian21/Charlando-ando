@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Messages;
 
+use App\Events\MessageSent;
 use App\Http\Controllers\Controller;
 use App\Models\Channel;
 use App\Models\Message;
@@ -9,7 +10,6 @@ use App\Models\Server;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redis;
 
 /**
  * Channel message list and create. Messages use the polymorphic `messagable`
@@ -69,22 +69,11 @@ class MessageController extends Controller
         $message->messagable()->associate($channel);
         $message->save();
 
-        Redis::publish($this->redisChannel($channel), json_encode([
-            'id' => $message->id,
-            'user_id' => $message->user_id,
-            'messagable_type' => $message->messagable_type,
-            'messagable_id' => $message->messagable_id,
-            'content' => $message->content,
-            'edited_at' => $message->edited_at,
-            'created_at' => $message->created_at?->toIso8601String(),
-        ], JSON_THROW_ON_ERROR));
+        // Real-time fan-out: the event publishes a JSON envelope to the Redis
+        // `events` channel that the Socket.io sidecar subscribes to.
+        MessageSent::dispatch($message);
 
         return response()->json(['data' => $message], 201);
-    }
-
-    private function redisChannel(Channel $channel): string
-    {
-        return "chat:channel:{$channel->id}";
     }
 
     private function ensureChannelBelongsToServer(Server $server, Channel $channel): void
