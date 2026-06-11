@@ -1,58 +1,65 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Charlando-ando
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Discord-like real-time chat platform — Laravel 13 + Inertia.js + React + Socket.io sidecar.
 
-## About Laravel
+## Stack
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+| Layer | Technology |
+| --- | --- |
+| Backend | Laravel 13 (PHP 8.4) |
+| Real-time | Socket.io 4 (Node.js 22 sidecar via Redis pub/sub) |
+| Auth | Laravel Socialite — Google OAuth |
+| Frontend | Inertia.js 2 + React 19 + Tailwind CSS 4 |
+| State | Zustand (PR4) |
+| Database | MySQL 8 |
+| Local dev | Laravel Sail (Docker Compose) |
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Local development
 
 ```bash
-composer require laravel/boost --dev
+# Bring up the full stack: Laravel, MySQL, Redis, Socket.io sidecar
+./vendor/bin/sail up -d
 
-php artisan boost:install
+# Install PHP + JS dependencies
+./vendor/bin/sail composer install
+./vendor/bin/sail npm install
+
+# Run migrations + seed permission lookup
+./vendor/bin/sail artisan migrate --seed
+
+# Build/watch the frontend
+./vendor/bin/sail npm run dev
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+The Socket.io sidecar exposes a `/health` endpoint on port 3000 in this PR.
+Full pub/sub bridge, JWT verification, and presence tracking land in PR3.
 
-## Contributing
+## Architecture
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```
+React  --HTTP-->  Laravel  --Redis publish-->  Socket.io sidecar  --WebSocket-->  React
+                                                       |
+                                                       +-- Redis SETEX presence (PR3)
+```
 
-## Code of Conduct
+Inertia serves the React SPA from the same Laravel process. Pages live in
+`resources/js/pages/` and are loaded lazily by `resources/js/app.jsx`.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Data model
 
-## Security Vulnerabilities
+- `users` (extended with `provider`, `provider_id`, `display_name`, `status`, `last_seen_at`)
+- `servers`, `channels`, `server_members`, `roles`, `permissions`, `role_permission`
+- `messages` (polymorphic — belongs to a channel or a direct-message thread)
+- `direct_messages` (unique pair via `LEAST`/`GREATEST` functional index on MySQL)
+- `channel_overrides`, `channel_override_permission` (per-channel allow/deny matrix)
+- `invites` (single- or multi-use, with optional expiry)
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Phases
 
-## License
+This repo is being built in chained PRs. Current state: **PR1 — Foundation**.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- [x] **PR1** — Foundation: Laravel scaffold, MySQL/Redis/Socket.io compose, 12 migrations, 10 models, Inertia + React + Tailwind + Deep Space theme.
+- [ ] **PR2** — Auth + Core Backend (Socialite, JWT, Server/Channel/Message controllers, PermissionResolver, InviteService).
+- [ ] **PR3** — Real-time Infrastructure (Socket.io server.js, presence, event broadcasting).
+- [ ] **PR4** — Frontend (Zustand store, chat pages, infinite scroll, DM pages, settings).
+- [ ] **PR5** — Testing + E2E (PHPUnit feature/unit + manual smoke).
