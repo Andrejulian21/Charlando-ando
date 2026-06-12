@@ -26,6 +26,9 @@ Route::middleware('auth')->group(function (): void {
     Route::get('me', [UserController::class, 'me'])->name('api.me.show');
     Route::patch('me', [UserController::class, 'updateMe'])->name('api.me.update');
 
+    // User search
+    Route::get('users/search', [UserController::class, 'search'])->name('api.users.search');
+
     // Servers
     Route::get('servers', [ServerController::class, 'index'])->name('api.servers.index');
     Route::post('servers', [ServerController::class, 'store'])->name('api.servers.store');
@@ -51,6 +54,8 @@ Route::middleware('auth')->group(function (): void {
         ->name('api.dms.messages.index');
     Route::post('dms/{dm}/messages', [DirectMessageController::class, 'store'])
         ->name('api.dms.messages.store');
+    Route::post('dms', [DirectMessageController::class, 'createThread'])
+        ->name('api.dms.store');
 
     // Invites
     Route::get('servers/{server}/invites', [InviteController::class, 'index'])->name('api.servers.invites.index');

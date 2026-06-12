@@ -33,6 +33,9 @@ class OAuthController extends Controller
     {
         $this->guardProvider($provider);
 
+        if ($provider === 'google') {
+            return Socialite::driver($provider)->with(['prompt' => 'select_account'])->redirect();
+        }
         return Socialite::driver($provider)->redirect();
     }
 

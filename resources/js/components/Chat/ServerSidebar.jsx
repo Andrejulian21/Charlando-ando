@@ -4,6 +4,8 @@
 // "pill" behind it — same affordance as the reference design.
 
 import { Link } from '@inertiajs/react';
+import { useState } from 'react';
+import UserSearchModal from './UserSearchModal';
 
 function hashToHue(id) {
     const n = typeof id === 'number' ? id : Number.parseInt(String(id), 10) || 0;
@@ -40,26 +42,44 @@ function ServerIcon({ server, active }) {
 }
 
 export default function ServerSidebar({ servers, activeServerId, homeHref = '/chat' }) {
-    return (
-        <nav
-            aria-label="Servidores"
-            className="flex w-[72px] shrink-0 flex-col items-center gap-2 border-r border-deep-space-700 bg-deep-space-800 px-2 py-4"
-        >
-            <Link
-                href={homeHref}
-                aria-label="Inicio"
-                className={`flex h-12 w-12 items-center justify-center rounded-2xl text-sm font-semibold transition-all ${
-                    !activeServerId
-                        ? 'rounded-xl bg-primary text-white shadow-md shadow-primary/30'
-                        : 'bg-deep-space-700 text-fg hover:rounded-xl hover:bg-primary hover:text-white'
-                }`}
-            >
-                CA
-            </Link>
+    const [searchOpen, setSearchOpen] = useState(false);
 
-            {servers && servers.length > 0 && (
-                <div aria-hidden="true" className="mx-1 h-px w-8 bg-deep-space-600" />
-            )}
+    return (
+        <>
+            <nav
+                aria-label="Servidores"
+                className="flex w-[72px] shrink-0 flex-col items-center gap-2 border-r border-deep-space-700 bg-deep-space-800 px-2 py-4"
+            >
+                <Link
+                    href={homeHref}
+                    aria-label="Inicio"
+                    className={`flex h-12 w-12 items-center justify-center rounded-2xl text-sm font-semibold transition-all ${
+                        !activeServerId
+                            ? 'rounded-xl bg-primary text-white shadow-md shadow-primary/30'
+                            : 'bg-deep-space-700 text-fg hover:rounded-xl hover:bg-primary hover:text-white'
+                    }`}
+                >
+                    CA
+                </Link>
+
+                {/* DM / User Search button */}
+                <button
+                    onClick={() => setSearchOpen(true)}
+                    aria-label="Mensajes directos"
+                    className="flex h-12 w-12 items-center justify-center rounded-2xl bg-deep-space-700 text-fg transition-all hover:rounded-xl hover:bg-primary hover:text-white"
+                >
+                    <svg aria-hidden="true" viewBox="0 0 20 20" className="h-5 w-5">
+                        <path
+                            fillRule="evenodd"
+                            clipRule="evenodd"
+                            d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 0 1-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"
+                        />
+                    </svg>
+                </button>
+
+                {servers && servers.length > 0 && (
+                    <div aria-hidden="true" className="mx-1 h-px w-8 bg-deep-space-600" />
+                )}
 
             <ul className="flex flex-col items-center gap-2">
                 {(servers ?? []).map((server) => (
@@ -76,5 +96,7 @@ export default function ServerSidebar({ servers, activeServerId, homeHref = '/ch
                 ))}
             </ul>
         </nav>
+        {searchOpen && <UserSearchModal onClose={() => setSearchOpen(false)} />}
+        </>
     );
 }

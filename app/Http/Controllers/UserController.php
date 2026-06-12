@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DirectMessage;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -61,5 +62,47 @@ class UserController extends Controller
                 'status' => $user->status,
             ],
         ]);
+    }
+
+    public function search(Request $request): JsonResponse
+    {
+        $query = $request->query('q', '');
+        $authId = Auth::id();
+
+        if ($query === '') {
+            return response()->json(['data' => []]);
+        }
+
+        $term = mb_strtolower($query);
+
+        $users = User::query()
+            ->where('id', '!=', $authId)
+            ->where(function ($q) use ($term) {
+                $like = '%' . $term . '%';
+                $q->whereRaw('LOWER(name) LIKE ?', [$like])
+                    ->orWhereRaw('LOWER(display_name) LIKE ?', [$like])
+                    ->orWhereRaw('LOWER(email) LIKE ?', [$like]);
+            })
+            ->orderBy('name')
+            ->limit(20)
+            ->get(['id', 'name', 'display_name', 'avatar_url']);
+
+        $userIds = $users->pluck('id')->toArray();
+        $existingDms = DirectMessage::query()
+            ->whereIn('user_a_id', array_merge([$authId], $userIds))
+            ->whereIn('user_b_id', array_merge([$authId], $userIds))
+            ->get()
+            ->filter(fn (DirectMessage $dm) => in_array($dm->otherUserId($authId), $userIds, true))
+            ->keyBy(fn (DirectMessage $dm) => $dm->otherUserId($authId));
+
+        $data = $users->map(fn (User $user) => [
+            'id' => $user->id,
+            'name' => $user->name,
+            'display_name' => $user->display_name,
+            'avatar_url' => $user->avatar_url,
+            'dm_exists' => $existingDms->has($user->id),
+        ])->values();
+
+        return response()->json(['data' => $data]);
     }
 }
