@@ -1,0 +1,48 @@
+@import 'tailwindcss';
+
+/* Deep Space theme tokens — Discord-like dark UI with a purple accent.
+ * Consumed via Tailwind v4 @theme so utilities like `bg-primary` and `text-fg` resolve. */
+@theme {
+    --color-deep-space-900: #0B0B12;
+    --color-deep-space-800: #12121C;
+    --color-deep-space-700: #1A1A28;
+    --color-deep-space-600: #232334;
+    --color-deep-space-500: #2E2E42;
+
+    --color-primary: #6C5DD3;
+    --color-primary-hover: #7E70E0;
+    --color-primary-active: #5A4DC0;
+
+    --color-success: #34D399;
+    --color-warning: #F59E0B;
+    --color-danger: #F43F5E;
+    --color-info: #38BDF8;
+
+    --color-fg: #E5E7EB;
+    --color-fg-muted: #9CA3AF;
+    --color-fg-subtle: #6B7280;
+
+    --radius-card: 8px;
+    --radius-button: 8px;
+
+    --font-sans: 'Geist', 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Geist', 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+@layer base {
+    html {
+        color-scheme: dark;
+    }
+
+    body {
+        background-color: var(--color-deep-space-900);
+        color: var(--color-fg);
+    }
+
+    *,
+    *::before,
+    *::after {
+        border-color: var(--color-deep-space-600);
+    }
+}
