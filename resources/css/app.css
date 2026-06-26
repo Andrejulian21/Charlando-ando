@@ -1,48 +1,194 @@
 @import 'tailwindcss';
 
 /* Deep Space theme tokens — Discord-like dark UI with a purple accent.
- * Consumed via Tailwind v4 @theme so utilities like `bg-primary` and `text-fg` resolve. */
+ * Consumed via Tailwind v4 @theme so utilities like `bg-primary` and `text-fg` resolve.
+ *
+ * Semantic tokens are layered on top:
+ *   - Superficies (--color-surface-*) replace deep-space-* for backgrounds
+ *   - Semantic colors (--color-*) for primary/success/warning/danger/info
+ *   - Text tokens (--color-fg-*) replace fg/fg-muted/fg-subtle
+ *   - Border tokens replace deep-space-* for borders
+ *   - Radius tokens unify radius-card/radius-button into a scale
+ *   - Typography scale (--text-*) for consistent type sizing
+ *
+ * deep-space-* aliases are preserved for backward compatibility with existing components. */
 @theme {
+    /* Superficies — Semantic background tokens */
+    --color-surface-base: #0B0B12;       /* antes deep-space-900 — fondo general */
+    --color-surface: #12121C;             /* antes deep-space-800 — cards, sidebars */
+    --color-surface-elevated: #1A1A28;    /* antes deep-space-700 — hover, borders */
+    --color-surface-hover: #232334;       /* antes deep-space-600 */
+    --color-surface-highlight: #2E2E42;   /* antes deep-space-500 */
+
+    /* Legacy deep-space aliases (backward compat) */
     --color-deep-space-900: #0B0B12;
     --color-deep-space-800: #12121C;
     --color-deep-space-700: #1A1A28;
     --color-deep-space-600: #232334;
     --color-deep-space-500: #2E2E42;
 
+    /* Colores semánticos */
     --color-primary: #6C5DD3;
     --color-primary-hover: #7E70E0;
     --color-primary-active: #5A4DC0;
+    --color-primary-subtle: rgba(108, 93, 211, 0.1);
 
     --color-success: #34D399;
     --color-warning: #F59E0B;
     --color-danger: #F43F5E;
     --color-info: #38BDF8;
 
-    --color-fg: #E5E7EB;
-    --color-fg-muted: #9CA3AF;
-    --color-fg-subtle: #6B7280;
+    /* Texto */
+    --color-fg: #E5E7EB;                  /* legacy alias */
+    --color-fg-primary: #E5E7EB;         /* replaces fg */
+    --color-fg-secondary: #9CA3AF;        /* replaces fg-muted */
+    --color-fg-tertiary: #6B7280;        /* replaces fg-subtle */
+    --color-fg-muted: #9CA3AF;           /* legacy alias */
+    --color-fg-subtle: #6B7280;          /* legacy alias */
+    --color-fg-link: #6C5DD3;
 
-    --radius-card: 8px;
-    --radius-button: 8px;
+    /* Glass surface tokens */
+    --glass-bg: rgba(18, 18, 28, 0.6);
+    --glass-bg-heavy: rgba(18, 18, 28, 0.75);
+    --glass-blur: 16px;
+    --glass-blur-heavy: 24px;
+    --glass-border: rgba(255, 255, 255, 0.06);
+    --glass-glow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 
+    /* Spring motion tokens */
+    --spring-overshoot: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --spring-gentle: cubic-bezier(0.22, 1.2, 0.36, 1);
+    --spring-standard: cubic-bezier(0.16, 1, 0.3, 1);
+
+    /* Bordes */
+    --color-border: #232334;             /* replaces deep-space-600 */
+    --color-border-light: rgba(35, 35, 52, 0.5);
+    --color-border-hover: #6C5DD3;
+
+    /* Radius scale */
+    --radius-sm: 4px;
+    --radius-md: 8px;                    /* antes radius-card / radius-button */
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --radius-full: 9999px;
+    --radius-card: 8px;                  /* legacy alias */
+    --radius-button: 8px;                 /* legacy alias */
+
+    /* Tipografía */
     --font-sans: 'Geist', 'Inter', ui-sans-serif, system-ui, sans-serif;
     --font-display: 'Geist', 'Inter', ui-sans-serif, system-ui, sans-serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+    /* Escala tipográfica */
+    --text-caption: 11px;
+    --text-caption--line-height: 1.4;
+    --text-body-sm: 13px;
+    --text-body-sm--line-height: 1.5;
+    --text-body: 15px;
+    --text-body--line-height: 1.5;
+    --text-subtitle: 18px;
+    --text-subtitle--line-height: 1.4;
+    --text-title: 21px;
+    --text-title--line-height: 1.3;
+    --text-heading: 28px;
+    --text-heading--line-height: 1.2;
+    --text-display: 36px;
+    --text-display--line-height: 1.1;
 }
 
 @layer base {
-    html {
-        color-scheme: dark;
-    }
+    html { color-scheme: dark; }
 
     body {
-        background-color: var(--color-deep-space-900);
-        color: var(--color-fg);
+        background-color: var(--color-surface-base);
+        color: var(--color-fg-primary);
     }
 
-    *,
-    *::before,
-    *::after {
-        border-color: var(--color-deep-space-600);
+    *, *::before, *::after { border-color: var(--color-border); }
+}
+
+/* Glass utility classes */
+@utility glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-glow);
+}
+@utility glass-heavy {
+    background: var(--glass-bg-heavy);
+    backdrop-filter: blur(var(--glass-blur-heavy));
+    -webkit-backdrop-filter: blur(var(--glass-blur-heavy));
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-glow);
+}
+@utility double-bezel {
+    padding: 6px;
+    border-radius: 2rem;
+    outline: 1px solid rgba(255, 255, 255, 0.1);
+    outline-offset: -1px;
+}
+
+/* Animation keyframes */
+@keyframes spring-in {
+    0%   { opacity: 0; transform: scale(0.9); }
+    70%  { opacity: 1; transform: scale(1.03); }
+    100% { transform: scale(1); }
+}
+@keyframes slide-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes shimmer {
+    from { background-position: -200% 0; }
+    to   { background-position: 200% 0; }
+}
+@keyframes pulse-dot {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.3); }
+}
+@keyframes in {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+@keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Utility classes */
+.animate-spring-in {
+    animation: spring-in 350ms var(--spring-overshoot);
+}
+.animate-shimmer {
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.04) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+.animate-pulse-dot {
+    animation: pulse-dot 300ms ease-out;
+}
+.animate-in {
+    animation: in 0.2s ease-out;
+}
+.fade-in {
+    animation: fade-in 0.2s ease-out;
+}
+.zoom-in-95 {
+    --tw-scale-x: 1;
+    --tw-scale-y: 1;
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    .animate-in, .fade-in, .animate-pulse, .animate-spin,
+    .animate-spring-in, .animate-shimmer, .animate-pulse-dot {
+        animation: none !important;
+    }
+    *, *::before, *::after {
+        transition-duration: 0s !important;
+        animation-duration: 0s !important;
+        animation-delay: 0ms !important;
+        transition-delay: 0ms !important;
     }
 }
