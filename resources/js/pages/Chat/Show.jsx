@@ -30,11 +30,7 @@ export default function ChatShow({ server, channel = null, messages = [], nextCu
                 })),
             );
         }
-        try {
-            connectSocket();
-        } catch (e) {
-            console.warn('[ChatShow] socket:', e);
-        }
+        try { connectSocket(); } catch (e) { console.warn('[ChatShow] socket:', e); }
     }, []);
 
     return (
@@ -62,7 +58,6 @@ export default function ChatShow({ server, channel = null, messages = [], nextCu
                     initialMessages={messages}
                     initialCursor={nextCursor}
                     serverId={server.id}
-                    channelId={channelId}
                     fetchUrl={channel ? `/api/servers/${server.id}/channels/${channel.id}/messages` : `/api/servers/${server.id}/messages`}
                     members={members}
                 />

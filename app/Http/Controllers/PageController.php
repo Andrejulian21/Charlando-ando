@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Channel;
 use App\Models\Server;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -68,41 +67,69 @@ class PageController extends Controller
     {
         $this->ensureMember($request, $server);
 
-        $messages = $server->messages()
-            ->orderByDesc('id')
-            ->limit(self::MESSAGE_PAGE_SIZE + 1)
-            ->get(['id', 'user_id', 'content', 'edited_at', 'created_at']);
+        $userId = $request->user()->getAuthIdentifier();
+
+        // Load the first channel and its messages
+        $channel = $server->channels()->orderBy('position')->orderBy('id')->first();
+
+        // Load channels separately (for sidebar) and members separately (for member list).
+        // We avoid passing the full Server model to prevent Eloquent relation metadata
+        // (pivot, counts, etc.) from leaking into the Inertia props.
+        $serverChannels = $server->channels()
+            ->orderBy('position')
+            ->orderBy('id')
+            ->get(['id', 'server_id', 'name', 'type', 'topic', 'position', 'created_at', 'updated_at']);
+
+        $members = $server->members()
+            ->select(['users.id', 'users.name', 'users.display_name', 'users.avatar_url', 'users.status'])
+            ->get()
+            ->map(fn ($user) => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'display_name' => $user->display_name,
+                'avatar_url' => $user->avatar_url,
+                'status' => $user->status,
+            ]);
+
+        $messages = $channel
+            ? $channel->messages()->orderByDesc('id')->limit(self::MESSAGE_PAGE_SIZE + 1)->get(['id', 'user_id', 'content', 'edited_at', 'created_at'])
+            : collect();
 
         $hasMore = $messages->count() > self::MESSAGE_PAGE_SIZE;
         if ($hasMore) {
             $messages = $messages->take(self::MESSAGE_PAGE_SIZE);
         }
 
-        $server->load([
-            'channels' => fn ($q) => $q->orderBy('position')->orderBy('id'),
-            'members:id,name,display_name,avatar_url,status',
-        ]);
+        $channelData = $channel ? ['id' => $channel->id, 'name' => $channel->name, 'type' => $channel->type] : null;
 
-        $userId = $request->user()->getAuthIdentifier();
-        $otherServers = Server::query()
-            ->where(function ($q) use ($userId) {
-                $q->whereHas('members', fn ($q) => $q->where('users.id', $userId))
-                  ->orWhere('is_public', true);
-            })
+        $userServers = Server::query()
+            ->whereHas('members', fn ($q) => $q->where('users.id', $userId))
             ->whereKeyNot($server->id)
             ->orderBy('name')
-            ->get();
+            ->get(['id', 'name', 'icon_url']);
 
-        $firstChannel = $server->channels->first();
-        $channelData = $firstChannel ? $firstChannel->only(['id', 'name', 'type', 'topic', 'position']) : null;
+        // Build a plain-array server so Inertia never serializes an Eloquent model
+        // with its internal relation metadata (pivot, counts, etc.).
+        $serverData = [
+            'id' => $server->id,
+            'owner_id' => $server->owner_id,
+            'name' => $server->name,
+            'icon_url' => $server->icon_url,
+            'description' => $server->description,
+            'is_public' => $server->is_public,
+            'created_at' => $server->created_at?->toIso8601String(),
+            'updated_at' => $server->updated_at?->toIso8601String(),
+            'channels' => $serverChannels,
+            'members' => $members,
+        ];
 
         return Inertia::render('Chat/Show', [
-            'server' => $server,
+            'server' => $serverData,
             'channel' => $channelData,
-            'messages' => $messages->values(),
+            'messages' => $messages->values()->all(),
             'nextCursor' => $hasMore ? (int) $messages->last()->id : null,
-            'members' => $server->members,
-            'otherServers' => $otherServers,
+            'members' => $members->all(),
+            'otherServers' => $userServers->all(),
         ]);
     }
 
@@ -110,6 +137,8 @@ class PageController extends Controller
     {
         abort_unless((int) $channel->server_id === (int) $server->id, 404);
         $this->ensureMember($request, $server);
+
+        $userId = $request->user()->getAuthIdentifier();
 
         $messages = $channel->messages()
             ->orderByDesc('id')
@@ -121,22 +150,49 @@ class PageController extends Controller
             $messages = $messages->take(self::MESSAGE_PAGE_SIZE);
         }
 
-        $server->load(['channels' => fn ($q) => $q->orderBy('position')->orderBy('id'), 'members:id,name,display_name,avatar_url,status']);
+        // Build channel/server data as plain arrays to avoid Eloquent metadata leaking.
+        $serverChannels = $server->channels()
+            ->orderBy('position')
+            ->orderBy('id')
+            ->get(['id', 'server_id', 'name', 'type', 'topic', 'position', 'created_at', 'updated_at']);
 
-        $userId = $request->user()->getAuthIdentifier();
-        $otherServers = Server::query()
-            ->where(fn ($q) => $q->whereHas('members', fn ($q) => $q->where('users.id', $userId))->orWhere('is_public', true))
+        $members = $server->members()
+            ->select(['users.id', 'users.name', 'users.display_name', 'users.avatar_url', 'users.status'])
+            ->get()
+            ->map(fn ($user) => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'display_name' => $user->display_name,
+                'avatar_url' => $user->avatar_url,
+                'status' => $user->status,
+            ]);
+
+        $userServers = Server::query()
+            ->whereHas('members', fn ($q) => $q->where('users.id', $userId))
             ->whereKeyNot($server->id)
             ->orderBy('name')
-            ->get();
+            ->get(['id', 'name', 'icon_url']);
+
+        $serverData = [
+            'id' => $server->id,
+            'owner_id' => $server->owner_id,
+            'name' => $server->name,
+            'icon_url' => $server->icon_url,
+            'description' => $server->description,
+            'is_public' => $server->is_public,
+            'created_at' => $server->created_at?->toIso8601String(),
+            'updated_at' => $server->updated_at?->toIso8601String(),
+            'channels' => $serverChannels,
+            'members' => $members,
+        ];
 
         return Inertia::render('Chat/Show', [
-            'server' => $server,
-            'channel' => $channel->only(['id', 'name', 'type', 'topic', 'position']),
-            'messages' => $messages->values(),
+            'server' => $serverData,
+            'channel' => ['id' => $channel->id, 'name' => $channel->name, 'type' => $channel->type],
+            'messages' => $messages->values()->all(),
             'nextCursor' => $hasMore ? (int) $messages->last()->id : null,
-            'members' => $server->members,
-            'otherServers' => $otherServers,
+            'members' => $members->all(),
+            'otherServers' => $userServers->all(),
         ]);
     }
 
