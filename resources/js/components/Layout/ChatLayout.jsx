@@ -22,12 +22,12 @@ export default function ChatLayout({ sidebar, channelList, memberList, children 
     return (
         <div className="flex h-screen w-screen overflow-hidden bg-surface-base text-fg-primary">
             {sidebar && (
-                <div className={`flex h-full shrink-0 flex-col transition-all duration-300 [transition-timing-function:var(--spring-gentle)] ${sidebarOpen ? 'opacity-100 visible pointer-events-auto' : 'opacity-0 invisible pointer-events-none'}`}>
+                <div className={`flex h-full shrink-0 flex-col overflow-hidden transition-all duration-300 [transition-timing-function:var(--spring-gentle)] ${sidebarOpen ? 'w-[72px] opacity-100 visible pointer-events-auto' : 'w-0 opacity-0 invisible pointer-events-none'}`}>
                     {sidebar}
                 </div>
             )}
             {channelList && (
-                <div className={`hidden h-full w-60 shrink-0 transition-all duration-300 [transition-timing-function:var(--spring-gentle)] md:block lg:block ${channelListOpen ? 'translate-x-0 opacity-100 visible pointer-events-auto' : '-translate-x-full opacity-0 invisible pointer-events-none'}`}>
+                <div className={`hidden h-full shrink-0 overflow-hidden transition-all duration-300 [transition-timing-function:var(--spring-gentle)] md:block lg:block ${channelListOpen ? 'w-60 opacity-100 visible pointer-events-auto' : 'w-0 opacity-0 invisible pointer-events-none'}`}>
                     {channelList}
                 </div>
             )}
@@ -35,7 +35,7 @@ export default function ChatLayout({ sidebar, channelList, memberList, children 
                 {children}
             </main>
             {memberList && (
-                <div className={`hidden h-full w-60 shrink-0 transition-all duration-300 [transition-timing-function:var(--spring-gentle)] lg:block ${memberListOpen ? 'translate-x-0 opacity-100 visible pointer-events-auto' : 'translate-x-full opacity-0 invisible pointer-events-none'}`}>
+                <div className={`hidden h-full shrink-0 overflow-hidden transition-all duration-300 [transition-timing-function:var(--spring-gentle)] lg:block ${memberListOpen ? 'w-60 opacity-100 visible pointer-events-auto' : 'w-0 opacity-0 invisible pointer-events-none'}`}>
                     {memberList}
                 </div>
             )}

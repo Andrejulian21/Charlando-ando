@@ -29,6 +29,18 @@ function formatTime(iso) {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
+function formatDateTime(iso) {
+    if (!iso) return '';
+    const date = new Date(iso);
+    if (Number.isNaN(date.valueOf())) return '';
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    const time = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    if (isToday) return time;
+    const dateStr = date.toLocaleDateString([], { day: '2-digit', month: '2-digit' });
+    return `${dateStr} ${time}`;
+}
+
 function authorFor(message, memberLookup) {
     if (message.user) return message.user;
     const member = memberLookup.get(message.user_id);
@@ -262,13 +274,13 @@ function MessageRow({ message, author, grouped, mine, index }) {
                         <span className={`truncate text-sm font-semibold ${mine ? 'text-primary' : 'text-fg'}`}>
                             {author.display_name || author.name}
                         </span>
-                        <time className="text-[11px] text-fg-subtle" dateTime={message.created_at}>
-                            {formatTime(message.created_at)}
+                        <time className="text-[11px] text-fg-subtle whitespace-nowrap" dateTime={message.created_at} title={new Date(message.created_at).toLocaleString()}>
+                            {formatDateTime(message.created_at)}
                         </time>
                         {message.edited_at && (
                             <span
                                 className="text-[10px] text-fg-subtle"
-                                title={`Editado ${formatTime(message.edited_at)}`}
+                                title={`Editado ${formatDateTime(message.edited_at)}`}
                             >
                                 (editado)
                             </span>

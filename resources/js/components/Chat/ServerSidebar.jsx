@@ -102,8 +102,8 @@ export default function ServerSidebar({ servers, activeServerId, homeHref = '/ch
                     ))}
                 </ul>
             </nav>
-            {searchOpen && <UserSearchModal onClose={() => setSearchOpen(false)} />}
-            {createOpen && <ServerCreateModal onClose={() => setCreateOpen(false)} />}
+            <UserSearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+            <ServerCreateModal isOpen={createOpen} onClose={() => setCreateOpen(false)} />
         </>
     );
 }
