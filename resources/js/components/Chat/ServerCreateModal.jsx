@@ -32,6 +32,16 @@ export default function ServerCreateModal({ isOpen, onClose }) {
         setChannels(updated);
     };
 
+    function sanitizeChannelName(raw) {
+        return raw
+            .trim()
+            .toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[^a-z0-9-]/g, '')
+            .replace(/^-+|-+$/g, '')
+            .slice(0, 64);
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!name.trim()) return;
@@ -41,16 +51,17 @@ export default function ServerCreateModal({ isOpen, onClose }) {
             const res = await window.axios.post('/api/servers', { name: name.trim(), is_public: isPublic });
             const serverId = res.data.data.id;
 
-            // Create each channel
+            // Create each channel (skip 'general' since the backend already creates it)
             for (const ch of channels) {
-                const chName = ch.name.trim();
-                if (!chName) continue;
+                const chName = sanitizeChannelName(ch.name);
+                if (!chName || chName === 'general') continue;
                 await window.axios.post(`/api/servers/${serverId}/channels`, {
                     name: chName,
                     type: 'text',
                 });
             }
 
+            onClose();
             router.visit(`/chat/${serverId}`, { replace: true });
         } catch (err) {
             setError(err?.response?.data?.message || 'No se pudo crear el servidor.');
@@ -103,13 +114,14 @@ export default function ServerCreateModal({ isOpen, onClose }) {
                 </div>
 
                 {/* Channels */}
-                <div className="flex flex-col gap-2">
-                    <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold uppercase tracking-wider text-fg-secondary">Canales (opcional)</span>
-                        <span className="text-[10px] text-fg-tertiary">
-                            {channels.length}/{MAX_CHANNELS}
-                        </span>
-                    </div>
+                    <div className="flex flex-col gap-2">
+                        <div className="flex items-center justify-between">
+                            <span className="text-xs font-semibold uppercase tracking-wider text-fg-secondary">Canales adicionales</span>
+                            <span className="text-[10px] text-fg-tertiary">
+                                {channels.length}/{MAX_CHANNELS}
+                            </span>
+                        </div>
+                        <p className="text-[10px] text-fg-tertiary -mt-1">Se usa minúsculas y guiones (ej: off-topic). El canal "general" se crea automáticamente.</p>
 
                     <div className="flex flex-col gap-1.5">
                         {channels.map((channel, index) => (
