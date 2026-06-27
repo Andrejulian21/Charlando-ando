@@ -13,9 +13,10 @@
 // The store keeps messages in ASC order (oldest first), so we can render
 // them in document order without reversing.
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import UserAvatar from '../Presence/UserAvatar';
+import Skeleton from '../ui/Skeleton';
 import { useChatStore } from '../../stores/useChatStore';
 
 const PAGE_SIZE_HINT = 50;
@@ -52,20 +53,20 @@ export default function MessageList({
     initialMessages,
     initialCursor,
     serverId,
-    channelId,
+    channelId = null,
     fetchUrl,
     members = [],
 }) {
-    // Resolve the cursor-pagination URL once. Channels pass
-    // serverId + channelId (used to build /api/servers/.../channels/.../messages);
+    // Resolve the cursor-paginated URL once. Servers pass
+    // serverId (used to build /api/servers/.../messages);
     // DMs pass an explicit `fetchUrl` like /api/dms/{id}/messages.
     const resolvedFetchUrl = useMemo(() => {
         if (fetchUrl) return fetchUrl;
-        if (serverId != null && channelId != null) {
-            return `/api/servers/${serverId}/channels/${channelId}/messages`;
+        if (serverId != null) {
+            return `/api/servers/${serverId}/messages`;
         }
         return null;
-    }, [fetchUrl, serverId, channelId]);
+    }, [fetchUrl, serverId]);
 
     const messages = useChatStore((s) => s.messages.get(room)) ?? [];
     const setMessages = useChatStore((s) => s.setMessages);
@@ -124,17 +125,20 @@ export default function MessageList({
         }
     }, [messages.length === 0]);
 
-    // Watch for new messages and auto-scroll only if the user was already
-    // near the bottom — otherwise we leave them where they are.
-    useEffect(() => {
+    // Always scroll to bottom on new messages so the user sees what they sent.
+    const messagesRef = useRef(messages);
+    useLayoutEffect(() => {
         const scroller = scrollerRef.current;
         if (!scroller) return;
-        if (hydratingRef.current) return;
-        const distanceFromBottom = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight;
-        if (distanceFromBottom <= NEAR_BOTTOM_PX) {
+        if (hydratingRef.current) {
             scroller.scrollTop = scroller.scrollHeight;
+            hydratingRef.current = false;
+            return;
         }
-    }, [messages.length]);
+        if (messagesRef.current === messages) return;
+        messagesRef.current = messages;
+        scroller.scrollTop = scroller.scrollHeight;
+    });
 
     // When the room changes (user navigates between channels) we want to
     // discard the previous scroll restoration. Reset bookkeeping.
@@ -174,7 +178,7 @@ export default function MessageList({
                     setLoadingMore(false);
                 }
             },
-            { root: scroller, rootMargin: '200px 0px 0px 0px', threshold: 0 }
+            { root: scroller, rootMargin: '200px 0px 0px 0px', threshold: 0 },
         );
         observer.observe(sentinel);
         return () => observer.disconnect();
@@ -196,22 +200,22 @@ export default function MessageList({
     if (!room) return null;
 
     return (
-        <div
-            ref={scrollerRef}
-            className="flex-1 overflow-y-auto bg-deep-space-900"
-            data-testid="message-scroller"
-        >
+        <div ref={scrollerRef} className="flex-1 overflow-y-auto bg-deep-space-900" data-testid="message-scroller">
             <div ref={topSentinelRef} aria-hidden="true" className="h-2" />
 
             {loadingMore && (
-                <p className="px-4 py-2 text-center text-xs text-fg-subtle">Cargando mensajes anteriores…</p>
+                <div className="px-4 py-2">
+                    <Skeleton variant="text" count={3} />
+                </div>
             )}
             {error && (
-                <p className="px-4 py-2 text-center text-xs text-danger" role="alert">{error}</p>
+                <p className="px-4 py-2 text-center text-xs text-danger" role="alert">
+                    {error}
+                </p>
             )}
             {!hasMore && messages.length > 0 && (
                 <p className="px-4 py-2 text-center text-[10px] uppercase tracking-wider text-fg-subtle">
-                    Inicio de #{channelId ?? 'la conversación'}
+                    Inicio de la conversación
                 </p>
             )}
 
@@ -234,6 +238,7 @@ export default function MessageList({
                             author={author}
                             grouped={grouped}
                             mine={mine}
+                            index={index}
                         />
                     );
                 })}
@@ -244,12 +249,13 @@ export default function MessageList({
     );
 }
 
-function MessageRow({ message, author, grouped, mine }) {
+function MessageRow({ message, author, grouped, mine, index }) {
     return (
-        <li className={`flex gap-3 px-2 py-1 hover:bg-deep-space-800/60 ${grouped ? 'mt-0.5' : 'mt-3'}`}>
-            <div className="w-10 shrink-0">
-                {!grouped && <UserAvatar user={author} size="sm" />}
-            </div>
+        <li
+            style={{ '--index': index }}
+            className={`flex gap-3 px-2 py-1 animate-[slide-up_300ms_var(--spring-gentle)_calc(var(--index)*30ms)_both] hover:glass transition-all duration-200 ${grouped ? 'mt-0.5' : 'mt-3'}`}
+        >
+            <div className="w-10 shrink-0">{!grouped && <UserAvatar user={author} size="sm" />}</div>
             <div className="min-w-0 flex-1">
                 {!grouped && (
                     <div className="flex items-baseline gap-2">
@@ -260,15 +266,16 @@ function MessageRow({ message, author, grouped, mine }) {
                             {formatTime(message.created_at)}
                         </time>
                         {message.edited_at && (
-                            <span className="text-[10px] text-fg-subtle" title={`Editado ${formatTime(message.edited_at)}`}>
+                            <span
+                                className="text-[10px] text-fg-subtle"
+                                title={`Editado ${formatTime(message.edited_at)}`}
+                            >
                                 (editado)
                             </span>
                         )}
                     </div>
                 )}
-                <p className="whitespace-pre-wrap break-words text-sm text-fg">
-                    {message.content}
-                </p>
+                <p className="whitespace-pre-wrap break-words text-sm text-fg">{message.content}</p>
             </div>
         </li>
     );
