@@ -33,11 +33,8 @@ function formatDateTime(iso) {
     if (!iso) return '';
     const date = new Date(iso);
     if (Number.isNaN(date.valueOf())) return '';
-    const now = new Date();
-    const isToday = date.toDateString() === now.toDateString();
     const time = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    if (isToday) return time;
-    const dateStr = date.toLocaleDateString([], { day: '2-digit', month: '2-digit' });
+    const dateStr = date.toLocaleDateString([], { day: '2-digit', month: '2-digit', year: 'numeric' });
     return `${dateStr} ${time}`;
 }
 
@@ -243,15 +240,26 @@ export default function MessageList({
                     const grouped = shouldGroupWith(prev, message);
                     const author = authorFor(message, memberLookup);
                     const mine = Number(message.user_id) === Number(currentUserId);
+                    const sameDay = prev && new Date(prev.created_at).toDateString() === new Date(message.created_at).toDateString();
                     return (
-                        <MessageRow
-                            key={message.id}
-                            message={message}
-                            author={author}
-                            grouped={grouped}
-                            mine={mine}
-                            index={index}
-                        />
+                        <span key={message.id}>
+                            {!sameDay && prev && (
+                                <li className="flex items-center gap-3 py-2" aria-hidden="true">
+                                    <span className="h-px flex-1 bg-border" />
+                                    <span className="text-[11px] font-medium uppercase tracking-wider text-fg-tertiary whitespace-nowrap">
+                                        {new Date(message.created_at).toLocaleDateString([], { day: 'numeric', month: 'long', year: 'numeric' })}
+                                    </span>
+                                    <span className="h-px flex-1 bg-border" />
+                                </li>
+                            )}
+                            <MessageRow
+                                message={message}
+                                author={author}
+                                grouped={grouped}
+                                mine={mine}
+                                index={index}
+                            />
+                        </span>
                     );
                 })}
             </ol>

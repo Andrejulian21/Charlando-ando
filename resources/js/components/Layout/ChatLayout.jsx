@@ -22,7 +22,7 @@ export default function ChatLayout({ sidebar, channelList, memberList, children 
     return (
         <div className="flex h-screen w-screen overflow-hidden bg-surface-base text-fg-primary">
             {sidebar && (
-                <div className={`flex h-full shrink-0 flex-col overflow-hidden transition-all duration-300 [transition-timing-function:var(--spring-gentle)] ${sidebarOpen ? 'w-[72px] opacity-100 visible pointer-events-auto' : 'w-0 opacity-0 invisible pointer-events-none'}`}>
+                <div className={`flex h-full shrink-0 flex-col transition-all duration-300 [transition-timing-function:var(--spring-gentle)] ${sidebarOpen ? 'w-[72px] opacity-100 visible pointer-events-auto' : 'w-0 opacity-0 invisible pointer-events-none'}`}>
                     {sidebar}
                 </div>
             )}
