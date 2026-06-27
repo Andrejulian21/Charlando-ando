@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Channel;
 use App\Models\Server;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * Renders the SPA shell pages. Each action hands off to Inertia::render with the
@@ -37,17 +35,39 @@ class PageController extends Controller
             ->orderBy('name')
             ->get();
 
+        $publicServers = Server::query()
+            ->where('is_public', true)
+            ->whereDoesntHave('members', fn ($q) => $q->where('users.id', $userId))
+            ->with('owner:id,name')
+            ->orderBy('name')
+            ->get(['id', 'name', 'description', 'icon_url', 'owner_id']);
+
+        $threads = \App\Models\DirectMessage::query()
+            ->where(function ($q) use ($userId) {
+                $q->where('user_a_id', $userId)->orWhere('user_b_id', $userId);
+            })
+            ->with([
+                'userA:id,name,display_name,avatar_url,status',
+                'userB:id,name,display_name,avatar_url,status',
+            ])
+            ->orderByDesc('last_message_at')
+            ->orderByDesc('id')
+            ->limit(10)
+            ->get();
+
         return Inertia::render('Chat/Index', [
             'servers' => $servers,
+            'publicServers' => $publicServers,
+            'threads' => $threads,
+            'currentUserId' => $userId,
         ]);
     }
 
-    public function chatShow(Request $request, Server $server, Channel $channel): Response
+    public function chatShow(Request $request, Server $server): Response
     {
-        $this->ensureChannelBelongsToServer($server, $channel);
         $this->ensureMember($request, $server);
 
-        $messages = $channel->messages()
+        $messages = $server->messages()
             ->orderByDesc('id')
             ->limit(self::MESSAGE_PAGE_SIZE + 1)
             ->get(['id', 'user_id', 'content', 'edited_at', 'created_at']);
@@ -57,22 +77,20 @@ class PageController extends Controller
             $messages = $messages->take(self::MESSAGE_PAGE_SIZE);
         }
 
-        $server->load([
-            'channels' => fn ($q) => $q->orderBy('position')->orderBy('id'),
-            'members:id,name,display_name,avatar_url,status',
-        ]);
+        $server->load(['members:id,name,display_name,avatar_url,status']);
 
         $userId = $request->user()->getAuthIdentifier();
         $otherServers = Server::query()
-            ->whereHas('members', fn ($q) => $q->where('users.id', $userId))
+            ->where(function ($q) use ($userId) {
+                $q->whereHas('members', fn ($q) => $q->where('users.id', $userId))
+                  ->orWhere('is_public', true);
+            })
             ->whereKeyNot($server->id)
-            ->with(['channels' => fn ($q) => $q->orderBy('position')->orderBy('id')])
             ->orderBy('name')
             ->get();
 
         return Inertia::render('Chat/Show', [
             'server' => $server,
-            'channel' => $channel,
             'messages' => $messages->values(),
             'nextCursor' => $hasMore ? (int) $messages->last()->id : null,
             'members' => $server->members,
@@ -98,9 +116,12 @@ class PageController extends Controller
             ->limit(50)
             ->get();
 
+        $servers = $this->userServers($userId);
+
         return Inertia::render('Dms/Index', [
             'threads' => $threads,
             'currentUserId' => $userId,
+            'servers' => $servers,
         ]);
     }
 
@@ -137,12 +158,21 @@ class PageController extends Controller
             ->limit(50)
             ->get();
 
+        // Pre-compute the other participant so the frontend doesn't need
+        // to resolve snake_case vs camelCase relation names.
+        $otherUserId = $dm->otherUserId($userId);
+        $otherUser = $otherUserId === $dm->user_a_id ? $dm->userA : $dm->userB;
+
+        $servers = $this->userServers($userId);
+
         return Inertia::render('Dms/Show', [
             'dm' => $dm,
+            'otherUser' => $otherUser ? $otherUser->toArray() : null,
             'messages' => $messages->values(),
             'nextCursor' => $hasMore ? (int) $messages->last()->id : null,
             'currentUserId' => $userId,
             'threads' => $threads,
+            'servers' => $servers,
         ]);
     }
 
@@ -154,7 +184,7 @@ class PageController extends Controller
         $servers = Server::query()
             ->whereHas('members', fn ($q) => $q->where('users.id', $userId))
             ->orderBy('name')
-            ->get(['id', 'name', 'icon_url']);
+            ->get(['id', 'name', 'icon_url', 'owner_id']);
 
         return Inertia::render('Settings/Index', [
             'user' => [
@@ -184,7 +214,7 @@ class PageController extends Controller
         $servers = Server::query()
             ->whereHas('members', fn ($q) => $q->where('users.id', $userId))
             ->orderBy('name')
-            ->get(['id', 'name', 'icon_url']);
+            ->get(['id', 'name', 'icon_url', 'owner_id']);
 
         return Inertia::render('Settings/ServerShow', [
             'server' => $server,
@@ -192,17 +222,18 @@ class PageController extends Controller
         ]);
     }
 
-    private function ensureChannelBelongsToServer(Server $server, Channel $channel): void
-    {
-        if ((int) $channel->server_id !== (int) $server->id) {
-            throw new HttpException(404, 'Channel not found in this server.');
-        }
-    }
-
     private function ensureMember(Request $request, Server $server): void
     {
         $userId = $request->user()->getAuthIdentifier();
         $isMember = $server->members()->whereKey($userId)->exists();
-        abort_unless($isMember, 403, 'You are not a member of this server.');
+        abort_unless($isMember, 403, 'No eres miembro de este servidor.');
+    }
+
+    private function userServers(int $userId): \Illuminate\Database\Eloquent\Collection
+    {
+        return \App\Models\Server::query()
+            ->whereHas('members', fn ($q) => $q->where('users.id', $userId))
+            ->orderBy('name')
+            ->get(['id', 'name', 'icon_url']);
     }
 }

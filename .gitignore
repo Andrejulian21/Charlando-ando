@@ -9,6 +9,7 @@
 /.idea
 /.nova
 /.phpunit.cache
+/coverage/
 /.vscode
 /.zed
 /auth.json
@@ -22,3 +23,11 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# E2E test artifacts
+test-results/
+playwright-report/
+coverage/
+e2e-report/
+database/testing.sqlite
+e2e/.auth-state.json

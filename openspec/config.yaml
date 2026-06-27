@@ -1,0 +1,106 @@
+# openspec/config.yaml
+schema: spec-driven
+
+context: |
+  Tech stack: Laravel 13 + Inertia.js 2 + React 19 + Tailwind CSS 4 + Vite 7
+  Backend: PHP 8.4, SQLite (local dev), Redis, database queue
+  Real-time: Socket.io sidecar (socketio/) via Redis pub/sub, JWT-authenticated
+  Auth: Google OAuth + GitHub OAuth via Laravel Socialite
+  Architecture: Laravel MVC + Inertia SPA + RESTful JSON API (api.php) + Socket.io sidecar
+  Frontend: React SPA (resources/js/pages/ + components/), Zustand 5, stores per domain
+  Testing: PHPUnit 12 (Unit + Feature suites, 5 tests), Vitest 4 + @testing-library/react 16 (6 tests)
+  Laravel Pint 1.29 (code style), no PHPStan/Psalm, no coverage tool
+  Strict TDD: true (PHPUnit + vitest detected, no explicit override)
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+    - Scope must state what is NOT changing
+  specs:
+    - Use Given/When/Then for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+  design:
+    - Include sequence diagrams for complex flows
+    - Document architecture decisions with rationale
+  tasks:
+    - Group by phase, use hierarchical numbering
+    - Keep tasks completable in one session
+  apply:
+    - Follow existing code patterns
+    tdd: true
+    test_command: php artisan test
+  verify:
+    test_command: php artisan test
+    build_command: npm run build && php artisan config:clear
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas
+
+testing:
+  backend:
+    runner:
+      command: php artisan test
+      framework: phpunit 12.5.29
+    layers:
+      unit:
+        available: true
+        command: php artisan test --testsuite=Unit
+      feature:
+        available: true
+        command: php artisan test --testsuite=Feature
+      e2e:
+        available: true
+        framework: playwright
+        command: npx playwright test
+        layers:
+          smoke:
+            available: true
+            command: npx playwright test
+    coverage:
+      available: false
+      note: No coverage tool configured; phpunit.xml omits coverage driver
+    quality:
+      linter:
+        available: true
+        command: ./vendor/bin/pint --test
+        tool: laravel/pint 1.29
+      formatter:
+        available: true
+        command: ./vendor/bin/pint
+        tool: laravel/pint 1.29
+      type_checker:
+        available: false
+        tool: none
+  frontend:
+    runner:
+      command: npx vitest run
+      framework: vitest 4.1.8
+    layers:
+      unit:
+        available: true
+        command: npx vitest run
+      integration:
+        available: true
+        command: npx vitest run
+        note: Uses @testing-library/react 16 + jsdom 29
+      e2e:
+        available: true
+        framework: playwright
+        command: npx playwright test
+        layers:
+          smoke:
+            available: true
+            command: npx playwright test
+    coverage:
+      available: false
+      note: No @vitest/coverage package installed
+    quality:
+      linter:
+        available: false
+        tool: none (relies on ESLint via Vite if configured)
+      formatter:
+        available: false
+        tool: none (relies on Prettier if configured)
+      type_checker:
+        available: false
+        tool: none (relies on TypeScript tsc if configured)

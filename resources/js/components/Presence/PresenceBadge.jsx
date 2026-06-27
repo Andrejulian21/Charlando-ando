@@ -3,6 +3,8 @@
 // of the design system (success for online, warning for idle, danger for
 // dnd, subtle for offline / invisible).
 
+import { useState, useRef, useEffect } from 'react';
+
 const STATUS_STYLES = {
     online: 'bg-success',
     idle: 'bg-warning',
@@ -26,17 +28,29 @@ const SIZE_CLASSES = {
 };
 
 export default function PresenceBadge({ status = 'offline', size = 'md', className = '', withRing = true }) {
+    const [pulsing, setPulsing] = useState(false);
+    const prevStatus = useRef(status);
     const colour = STATUS_STYLES[status] ?? STATUS_STYLES.offline;
     const label = STATUS_LABEL[status] ?? 'Desconocido';
     const sizeClass = SIZE_CLASSES[size] ?? SIZE_CLASSES.md;
-    const ringClass = withRing ? 'ring-2 ring-deep-space-900' : '';
+    const ringClass = withRing ? 'ring-2 ring-surface-base' : '';
+
+    useEffect(() => {
+        if (prevStatus.current !== status && status !== 'offline') {
+            setPulsing(true);
+            const timer = setTimeout(() => setPulsing(false), 300);
+            prevStatus.current = status;
+            return () => clearTimeout(timer);
+        }
+        prevStatus.current = status;
+    }, [status]);
 
     return (
         <span
             aria-label={label}
             title={label}
             data-status={status}
-            className={`inline-block rounded-full ${colour} ${sizeClass} ${ringClass} ${className}`.trim()}
+            className={`inline-block rounded-full ${colour} ${sizeClass} ${ringClass} ${pulsing ? 'animate-pulse-dot' : ''} ${className}`.trim()}
         />
     );
 }

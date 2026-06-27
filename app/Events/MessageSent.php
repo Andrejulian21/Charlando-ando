@@ -5,6 +5,7 @@ namespace App\Events;
 use App\Models\Channel;
 use App\Models\DirectMessage;
 use App\Models\Message;
+use App\Models\Server;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -99,6 +100,7 @@ class MessageSent implements ShouldBroadcast
         return match ($type) {
             Channel::class => "channel:{$id}",
             DirectMessage::class => "dm:{$id}",
+            Server::class => "server:{$id}",
             default => '',
         };
     }

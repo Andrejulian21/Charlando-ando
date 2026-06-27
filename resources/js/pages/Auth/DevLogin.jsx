@@ -15,7 +15,7 @@ export default function DevLogin({ errors: inertiaErrors = {} }) {
         <>
             <Head title="Iniciar sesión" />
 
-            <main className="relative min-h-screen overflow-hidden bg-deep-space-900">
+            <main className="relative min-h-screen overflow-hidden bg-surface-base">
                 <div
                     aria-hidden="true"
                     className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(108,93,211,0.18),transparent_55%),radial-gradient(circle_at_bottom_right,rgba(56,189,248,0.08),transparent_60%)]"
@@ -26,16 +26,11 @@ export default function DevLogin({ errors: inertiaErrors = {} }) {
                         href="/"
                         className="mb-10 inline-flex items-center gap-2.5 text-fg-muted transition-colors hover:text-fg"
                     >
-                        <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary text-sm font-bold text-white shadow-lg shadow-primary/30">
-                            CA
-                        </span>
-                        <span className="font-display text-lg font-semibold tracking-tight">
-                            Charlando-ando
-                        </span>
+                        <img src="/nombre_con_icono.png" alt="Charlando-ando" className="h-12 w-auto" />
                     </Link>
 
-                    <div className="relative w-full rounded-card bg-gradient-to-b from-primary/30 via-deep-space-600/40 to-transparent p-px shadow-2xl shadow-primary/5">
-                        <section className="rounded-card border border-deep-space-700/50 bg-deep-space-800/85 p-10 backdrop-blur-sm">
+                    <div className="double-bezel animate-[spring-in_350ms_var(--spring-overshoot)]">
+                        <section className="glass-heavy rounded-[calc(2rem-0.375rem)] p-10">
                             <h1 className="font-display text-3xl font-semibold tracking-tight text-fg">
                                 Iniciar sesión
                             </h1>
@@ -46,7 +41,7 @@ export default function DevLogin({ errors: inertiaErrors = {} }) {
                             {(inertiaErrors.email || inertiaErrors.oauth) && (
                                 <div
                                     role="alert"
-                                    className="mt-5 rounded-card border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger"
+                                    className="mt-5 rounded-md border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger"
                                 >
                                     {inertiaErrors.email || inertiaErrors.oauth}
                                 </div>
@@ -67,12 +62,10 @@ export default function DevLogin({ errors: inertiaErrors = {} }) {
                                         onChange={(e) => setData('email', e.target.value)}
                                         required
                                         autoComplete="email"
-                                        className="mt-2 block w-full rounded-button border border-deep-space-600 bg-deep-space-900 px-3 py-2.5 text-sm text-fg placeholder-fg-subtle transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                                        className="mt-2 block w-full rounded-md border border-surface-hover bg-surface-base px-3 py-2.5 text-sm text-fg placeholder-fg-subtle transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
                                         placeholder="tu@correo.com"
                                     />
-                                    {errors.email && (
-                                        <p className="mt-1 text-xs text-danger">{errors.email}</p>
-                                    )}
+                                    {errors.email && <p className="mt-1 text-xs text-danger">{errors.email}</p>}
                                 </div>
 
                                 <div>
@@ -89,18 +82,16 @@ export default function DevLogin({ errors: inertiaErrors = {} }) {
                                         onChange={(e) => setData('password', e.target.value)}
                                         required
                                         autoComplete="current-password"
-                                        className="mt-2 block w-full rounded-button border border-deep-space-600 bg-deep-space-900 px-3 py-2.5 text-sm text-fg placeholder-fg-subtle transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                                        className="mt-2 block w-full rounded-md border border-surface-hover bg-surface-base px-3 py-2.5 text-sm text-fg placeholder-fg-subtle transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
                                         placeholder="Tu contraseña"
                                     />
-                                    {errors.password && (
-                                        <p className="mt-1 text-xs text-danger">{errors.password}</p>
-                                    )}
+                                    {errors.password && <p className="mt-1 text-xs text-danger">{errors.password}</p>}
                                 </div>
 
                                 <button
                                     type="submit"
                                     disabled={processing}
-                                    className="w-full rounded-button bg-primary px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-all hover:-translate-y-px hover:bg-primary-hover hover:shadow-primary/40 active:translate-y-0 active:bg-primary-active disabled:translate-y-0 disabled:opacity-50"
+                                    className="w-full rounded-md bg-primary px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-all hover:-translate-y-px hover:bg-primary-hover hover:shadow-primary/40 active:translate-y-0 active:bg-primary-active disabled:translate-y-0 disabled:opacity-50"
                                 >
                                     {processing ? 'Ingresando...' : 'Iniciar sesión'}
                                 </button>
@@ -110,10 +101,7 @@ export default function DevLogin({ errors: inertiaErrors = {} }) {
 
                     <p className="mt-8 text-sm text-fg-subtle">
                         ¿No tienes cuenta?{' '}
-                        <Link
-                            href="/dev-register"
-                            className="text-primary transition-colors hover:text-primary-hover"
-                        >
+                        <Link href="/dev-register" className="text-primary transition-colors hover:text-primary-hover">
                             Crear una
                         </Link>
                     </p>

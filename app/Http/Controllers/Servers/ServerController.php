@@ -32,13 +32,34 @@ class ServerController extends Controller
     {
         $userId = Auth::id();
 
-        $servers = Server::query()
+        if ($request->query('filter') === 'public') {
+            $publicServers = Server::query()
+                ->where('is_public', true)
+                ->whereDoesntHave('members', fn ($q) => $q->where('users.id', $userId))
+                ->withCount('members')
+                ->get(['id', 'name', 'description', 'icon_url', 'owner_id'])
+                ->load('owner:id,name');
+            return response()->json(['data' => $publicServers]);
+        }
+
+        $myServers = Server::query()
             ->whereHas('members', fn ($q) => $q->where('users.id', $userId))
             ->with(['channels' => fn ($q) => $q->orderBy('position')->orderBy('id')])
             ->orderBy('name')
             ->get();
 
-        return response()->json(['data' => $servers]);
+        $publicServers = Server::query()
+            ->where('is_public', true)
+            ->whereDoesntHave('members', fn ($q) => $q->where('users.id', $userId))
+            ->withCount('members')
+            ->orderBy('name')
+            ->get(['id', 'name', 'description', 'icon_url', 'owner_id'])
+            ->load('owner:id,name');
+
+        return response()->json([
+            'data' => $myServers,
+            'public' => $publicServers,
+        ]);
     }
 
     public function show(Server $server): JsonResponse
@@ -60,6 +81,7 @@ class ServerController extends Controller
             'name' => ['required', 'string', 'max:64'],
             'icon_url' => ['nullable', 'url', 'max:512'],
             'description' => ['nullable', 'string', 'max:1000'],
+            'is_public' => ['boolean'],
         ]);
 
         $userId = Auth::id();
@@ -70,6 +92,7 @@ class ServerController extends Controller
                 'name' => $data['name'],
                 'icon_url' => $data['icon_url'] ?? null,
                 'description' => $data['description'] ?? null,
+                'is_public' => $data['is_public'] ?? false,
             ]);
 
             $this->seedDefaultRoles($server);
@@ -91,12 +114,13 @@ class ServerController extends Controller
 
     public function update(Request $request, Server $server): JsonResponse
     {
-        $this->ensureOwnerOrAdmin($server);
+        $this->ensureOwner($server);
 
         $data = $request->validate([
             'name' => ['sometimes', 'required', 'string', 'max:64'],
             'icon_url' => ['sometimes', 'nullable', 'url', 'max:512'],
             'description' => ['sometimes', 'nullable', 'string', 'max:1000'],
+            'is_public' => ['sometimes', 'boolean'],
         ]);
 
         $server->update($data);
@@ -110,6 +134,31 @@ class ServerController extends Controller
         $server->delete();
 
         return response()->json(null, 204);
+    }
+
+    public function join(Server $server): JsonResponse
+    {
+        if (!$server->is_public) {
+            abort(403, 'Este servidor es privado. Necesitas una invitación.');
+        }
+
+        $userId = Auth::id();
+        $alreadyMember = $server->members()->whereKey($userId)->exists();
+        if ($alreadyMember) {
+            abort(422, 'Ya eres miembro de este servidor.');
+        }
+
+        $memberRole = $server->roles()->where('level', Role::LEVEL_MEMBER)->firstOrFail();
+        ServerMember::query()->create([
+            'server_id' => $server->id,
+            'user_id' => $userId,
+            'role_id' => $memberRole->id,
+            'joined_at' => now(),
+        ]);
+
+        $server->load(['channels' => fn ($q) => $q->orderBy('position')->orderBy('id')]);
+
+        return response()->json(['data' => $server], 200);
     }
 
     private function seedDefaultRoles(Server $server): void

@@ -116,22 +116,23 @@ class UserSearchTest extends TestCase
         $this->assertEquals($bob->id, $data[0]['id']);
     }
 
-    public function test_search_returns_at_most_20_results(): void
+    public function test_search_returns_at_most_50_results(): void
     {
         $searcher = User::factory()->create(['name' => 'Searcher', 'email' => 'searcher@test.com']);
         User::factory()->count(25)->create(['email' => null]);
 
+        // Empty query returns all users except the searcher (up to 50)
         $response = $this->actingAs($searcher)->getJson('/api/users/search?q=');
         $response->assertStatus(200);
 
         $data = $response->json('data');
-        $this->assertCount(0, $data);
+        $this->assertCount(25, $data);
 
         // Now search with a real term
         $response = $this->actingAs($searcher)->getJson('/api/users/search?q=S');
         $response->assertStatus(200);
         $data = $response->json('data');
-        $this->assertLessThanOrEqual(20, count($data));
+        $this->assertLessThanOrEqual(50, count($data));
     }
 
     public function test_search_returns_only_required_fields(): void

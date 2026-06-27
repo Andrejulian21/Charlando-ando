@@ -7,7 +7,7 @@ import PresenceBadge from './PresenceBadge';
 
 function hashToHue(id) {
     const n = typeof id === 'number' ? id : Number.parseInt(String(id), 10) || 0;
-    return n * 137.508 % 360; // golden-angle spread -> distinct hues
+    return (n * 137.508) % 360; // golden-angle spread -> distinct hues
 }
 
 function initialsFor(user) {
@@ -46,7 +46,7 @@ export default function UserAvatar({ user, size = 'md', showPresence = true, cla
 
     return (
         <span
-            className={`relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-deep-space-600 font-semibold text-fg ${sizeClass} ${className}`.trim()}
+            className={`relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-surface-hover font-semibold text-fg ${sizeClass} ${className}`.trim()}
             aria-label={user.display_name || user.name || 'Avatar de usuario'}
         >
             {user.avatar_url ? (

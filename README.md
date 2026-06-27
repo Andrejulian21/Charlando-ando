@@ -1,65 +1,65 @@
 # Charlando-ando
 
-Discord-like real-time chat platform — Laravel 13 + Inertia.js + React + Socket.io sidecar.
+Plataforma de chat en tiempo real inspirada en Discord — Laravel 13 + Inertia.js + React + Socket.io.
 
 ## Stack
 
-| Layer | Technology |
-| --- | --- |
-| Backend | Laravel 13 (PHP 8.4) |
-| Real-time | Socket.io 4 (Node.js 22 sidecar via Redis pub/sub) |
-| Auth | Laravel Socialite — Google OAuth |
-| Frontend | Inertia.js 2 + React 19 + Tailwind CSS 4 |
-| State | Zustand (PR4) |
-| Database | MySQL 8 |
-| Local dev | Laravel Sail (Docker Compose) |
+| Capa        | Tecnología                                    |
+|-------------|-----------------------------------------------|
+| Backend     | Laravel 13 (PHP 8.4)                          |
+| Tiempo real | Socket.io 4 (sidecar Node.js 22 vía Redis pub/sub) |
+| Autenticación | Laravel Socialite — Google OAuth              |
+| Frontend    | Inertia.js 2 + React 19 + Tailwind CSS 4      |
+| Estado      | Zustand                                       |
+| Base de datos | MySQL 8                                     |
+| Desarrollo local | Laravel Sail (Docker Compose)                 |
 
-## Local development
+## Desarrollo local
 
 ```bash
-# Bring up the full stack: Laravel, MySQL, Redis, Socket.io sidecar
+# Levantar el stack completo: Laravel, MySQL, Redis, sidecar Socket.io
 ./vendor/bin/sail up -d
 
-# Install PHP + JS dependencies
+# Instalar dependencias PHP y JS
 ./vendor/bin/sail composer install
 ./vendor/bin/sail npm install
 
-# Run migrations + seed permission lookup
+# Ejecutar migraciones y sembrar permisos
 ./vendor/bin/sail artisan migrate --seed
 
-# Build/watch the frontend
+# Compilar y observar el frontend
 ./vendor/bin/sail npm run dev
 ```
 
-The Socket.io sidecar exposes a `/health` endpoint on port 3000 in this PR.
-Full pub/sub bridge, JWT verification, and presence tracking land in PR3.
+El sidecar de Socket.io expone un endpoint `/health` en el puerto 3000.
+El puente completo pub/sub, verificación JWT y seguimiento de presencia se agregaron en PR3.
 
-## Architecture
+## Arquitectura
 
 ```
 React  --HTTP-->  Laravel  --Redis publish-->  Socket.io sidecar  --WebSocket-->  React
                                                        |
-                                                       +-- Redis SETEX presence (PR3)
+                                                       +-- Redis SETEX presencia
 ```
 
-Inertia serves the React SPA from the same Laravel process. Pages live in
-`resources/js/pages/` and are loaded lazily by `resources/js/app.jsx`.
+Inertia sirve la SPA de React desde el mismo proceso de Laravel. Las páginas viven en
+`resources/js/pages/` y se cargan de forma diferida mediante `resources/js/app.jsx`.
 
-## Data model
+## Modelo de datos
 
-- `users` (extended with `provider`, `provider_id`, `display_name`, `status`, `last_seen_at`)
+- `users` (extendido con `provider`, `provider_id`, `display_name`, `status`, `last_seen_at`)
 - `servers`, `channels`, `server_members`, `roles`, `permissions`, `role_permission`
-- `messages` (polymorphic — belongs to a channel or a direct-message thread)
-- `direct_messages` (unique pair via `LEAST`/`GREATEST` functional index on MySQL)
-- `channel_overrides`, `channel_override_permission` (per-channel allow/deny matrix)
-- `invites` (single- or multi-use, with optional expiry)
+- `messages` (polimórfico — pertenece a un canal o a un hilo de mensaje directo)
+- `direct_messages` (par único mediante índice funcional `LEAST`/`GREATEST` en MySQL)
+- `channel_overrides`, `channel_override_permission` (matriz de permisos por canal)
+- `invites` (de un solo uso o multi-uso, con caducidad opcional)
 
-## Phases
+## Historia del proyecto
 
-This repo is being built in chained PRs. Current state: **PR1 — Foundation**.
+Este repositorio se construyó mediante PRs encadenados. Estado actual: **completo**.
 
-- [x] **PR1** — Foundation: Laravel scaffold, MySQL/Redis/Socket.io compose, 12 migrations, 10 models, Inertia + React + Tailwind + Deep Space theme.
-- [ ] **PR2** — Auth + Core Backend (Socialite, JWT, Server/Channel/Message controllers, PermissionResolver, InviteService).
-- [ ] **PR3** — Real-time Infrastructure (Socket.io server.js, presence, event broadcasting).
-- [ ] **PR4** — Frontend (Zustand store, chat pages, infinite scroll, DM pages, settings).
-- [ ] **PR5** — Testing + E2E (PHPUnit feature/unit + manual smoke).
+- [x] **PR1** — Cimientos: Laravel scaffold, compose de MySQL/Redis/Socket.io, 12 migraciones, 10 modelos, Inertia + React + Tailwind + tema Deep Space.
+- [x] **PR2** — Auth + Backend principal (Socialite, JWT, controladores de Server/Channel/Message, PermissionResolver, InviteService).
+- [x] **PR3** — Infraestructura en tiempo real (Socket.io server.js, presencia, broadcasting de eventos).
+- [x] **PR4** — Frontend (store Zustand, páginas de chat, scroll infinito, DMs, configuración).
+- [x] **PR5** — Tests (PHPUnit feature/unit + humo manual).

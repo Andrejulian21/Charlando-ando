@@ -76,6 +76,50 @@ class MessageController extends Controller
         return response()->json(['data' => $message], 201);
     }
 
+    public function indexForServer(Request $request, Server $server): JsonResponse
+    {
+        $this->ensureMember($server);
+
+        $cursor = $request->query('cursor');
+        $cursor = is_numeric($cursor) ? (int) $cursor : null;
+
+        $query = $server->messages()->orderByDesc('id');
+        if ($cursor !== null) {
+            $query->where('id', '<', $cursor);
+        }
+
+        $messages = $query->limit(self::PAGE_SIZE + 1)->get(['id', 'user_id', 'content', 'edited_at', 'created_at']);
+        $hasMore = $messages->count() > self::PAGE_SIZE;
+        if ($hasMore) {
+            $messages = $messages->take(self::PAGE_SIZE);
+        }
+
+        return response()->json([
+            'data' => $messages->values(),
+            'next_cursor' => $hasMore ? (int) $messages->last()->id : null,
+        ]);
+    }
+
+    public function storeForServer(Request $request, Server $server): JsonResponse
+    {
+        $this->ensureMember($server);
+
+        $data = $request->validate([
+            'content' => ['required', 'string', 'max:4000'],
+        ]);
+
+        $message = new Message([
+            'user_id' => Auth::id(),
+            'content' => $data['content'],
+        ]);
+        $message->messagable()->associate($server);
+        $message->save();
+
+        MessageSent::dispatch($message);
+
+        return response()->json(['data' => $message], 201);
+    }
+
     private function ensureChannelBelongsToServer(Server $server, Channel $channel): void
     {
         abort_unless((int) $channel->server_id === (int) $server->id, 404, 'Channel not found in this server.');

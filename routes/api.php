@@ -8,6 +8,7 @@ use App\Http\Controllers\Servers\InviteController;
 use App\Http\Controllers\Servers\RoleController;
 use App\Http\Controllers\Servers\ServerController;
 use App\Http\Controllers\UserController;
+use App\Models\Server;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -35,6 +36,7 @@ Route::middleware('auth')->group(function (): void {
     Route::get('servers/{server}', [ServerController::class, 'show'])->name('api.servers.show');
     Route::patch('servers/{server}', [ServerController::class, 'update'])->name('api.servers.update');
     Route::delete('servers/{server}', [ServerController::class, 'destroy'])->name('api.servers.destroy');
+    Route::post('servers/{server}/join', [ServerController::class, 'join'])->name('api.servers.join');
 
     // Channels (nested under server)
     Route::get('servers/{server}/channels', [ChannelController::class, 'index'])->name('api.servers.channels.index');
@@ -49,7 +51,19 @@ Route::middleware('auth')->group(function (): void {
     Route::post('servers/{server}/channels/{channel}/messages', [MessageController::class, 'store'])
         ->name('api.channels.messages.store');
 
+    // Server-level messages (no channel)
+    Route::get('servers/{server}/messages', [MessageController::class, 'indexForServer'])
+        ->name('api.servers.messages.index');
+    Route::post('servers/{server}/messages', [MessageController::class, 'storeForServer'])
+        ->name('api.servers.messages.store');
+
+    // Legacy channel-level redirects (307 preserves POST method)
+    Route::any('servers/{server}/channels/{channel}/messages', function (Server $server) {
+        return redirect()->route('api.servers.messages.index', ['server' => $server], 307);
+    });
+
     // Direct messages
+    Route::get('dms', [DirectMessageController::class, 'listThreads'])->name('api.dms.index');
     Route::get('dms/{dm}/messages', [DirectMessageController::class, 'index'])
         ->name('api.dms.messages.index');
     Route::post('dms/{dm}/messages', [DirectMessageController::class, 'store'])

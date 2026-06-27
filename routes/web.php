@@ -2,7 +2,10 @@
 
 use App\Http\Controllers\Auth\DevLoginController;
 use App\Http\Controllers\Auth\OAuthController;
+use App\Http\Controllers\DevEmitController;
 use App\Http\Controllers\PageController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -40,13 +43,25 @@ Route::post('/dev-login', [DevLoginController::class, 'login']);
 Route::get('/dev-register', [DevLoginController::class, 'showRegister'])->name('dev.register');
 Route::post('/dev-register', [DevLoginController::class, 'register']);
 
+// Development-only Socket.io emit endpoint for E2E tests.
+if (app()->environment('local', 'testing')) {
+    Route::post('/dev/emit', [DevEmitController::class, 'emit']);
+}
+
 // Authenticated SPA shell.
 Route::middleware('auth')->group(function (): void {
+    Route::post('/logout', function (Request $request) {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect('/');
+    })->name('logout');
+
     Route::get('/chat', [PageController::class, 'chatIndex'])
         ->name('chat.index');
 
-    Route::get('/chat/{server}/{channel}', [PageController::class, 'chatShow'])
-        ->where(['server' => '[0-9]+', 'channel' => '[0-9]+'])
+    Route::get('/chat/{server}', [PageController::class, 'chatShow'])
+        ->where('server', '[0-9]+')
         ->name('chat.show');
 
     Route::get('/dms', [PageController::class, 'dmsIndex'])

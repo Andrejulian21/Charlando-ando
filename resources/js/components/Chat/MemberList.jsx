@@ -17,13 +17,13 @@ function MemberRow({ member, currentUserId }) {
 
     return (
         <li>
-            <div className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-fg-muted transition-colors hover:bg-deep-space-700 hover:text-fg">
+            <div className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-fg-secondary transition-colors hover:bg-surface-elevated hover:text-fg-primary">
                 <UserAvatar user={enriched} size="sm" />
                 <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm text-fg-muted">
+                    <p className="truncate text-sm text-fg-secondary">
                         {member.display_name || member.name}
                         {Number(member.id) === Number(currentUserId) && (
-                            <span className="ml-1 text-[10px] text-fg-subtle">(tú)</span>
+                            <span className="ml-1 text-caption text-fg-tertiary">(tú)</span>
                         )}
                     </p>
                     <LastSeen
@@ -47,7 +47,7 @@ export default function MemberList({ members = [], currentUserId }) {
                 type="button"
                 onClick={() => setCollapsed(false)}
                 aria-label="Mostrar lista de miembros"
-                className="flex w-8 shrink-0 items-center justify-center border-l border-deep-space-700 bg-deep-space-800 text-fg-muted hover:text-fg"
+                className="flex h-full w-8 shrink-0 items-center justify-center border-l border-white/5 glass text-fg-secondary hover:text-fg-primary"
             >
                 <svg aria-hidden="true" viewBox="0 0 20 20" className="h-4 w-4 fill-current">
                     <path d="M12.79 5.23a.75.75 0 010 1.06L9.06 10l3.73 3.71a.75.75 0 11-1.06 1.06l-4.25-4.25a.75.75 0 010-1.06l4.25-4.25a.75.75 0 011.06 0z" />
@@ -69,17 +69,17 @@ export default function MemberList({ members = [], currentUserId }) {
     return (
         <aside
             aria-label="Lista de miembros"
-            className="flex w-60 shrink-0 flex-col border-l border-deep-space-700 bg-deep-space-800"
+            className="flex h-full w-60 shrink-0 flex-col border-l border-white/5 glass"
         >
-            <header className="flex h-14 items-center justify-between border-b border-deep-space-700 px-4">
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-fg-muted">
+            <header className="flex h-14 shrink-0 items-center justify-between border-b border-white/5 px-4">
+                <h2 className="text-caption font-semibold uppercase tracking-wider text-fg-secondary">
                     Miembros — {members.length}
                 </h2>
                 <button
                     type="button"
                     onClick={() => setCollapsed(true)}
                     aria-label="Ocultar lista de miembros"
-                    className="rounded-md p-1 text-fg-muted hover:bg-deep-space-700 hover:text-fg"
+                    className="rounded-md p-1 text-fg-secondary hover:bg-surface-elevated hover:text-fg-primary"
                 >
                     <svg aria-hidden="true" viewBox="0 0 20 20" className="h-4 w-4 fill-current">
                         <path d="M7.21 14.77a.75.75 0 010-1.06L10.94 10 7.21 6.29a.75.75 0 111.06-1.06l4.25 4.25a.75.75 0 010 1.06l-4.25 4.25a.75.75 0 01-1.06 0z" />
@@ -87,15 +87,21 @@ export default function MemberList({ members = [], currentUserId }) {
                 </button>
             </header>
 
-            <div className="flex-1 overflow-y-auto px-2 py-3">
+            <div className="flex-1 overflow-y-auto px-2 pb-16 pt-3">
                 {online.length > 0 && (
                     <section className="mb-3">
                         <h3 className="mb-1 px-2 text-[11px] font-semibold uppercase tracking-wider text-fg-subtle">
                             En línea — {online.length}
                         </h3>
                         <ul className="space-y-0.5">
-                            {online.map((m) => (
-                                <MemberRow key={`online-${m.id}`} member={m} currentUserId={currentUserId} />
+                            {online.map((m, i) => (
+                                <li
+                                    key={`online-${m.id}`}
+                                    className="animate-[slide-up_300ms_var(--spring-gentle)_calc(var(--index)*50ms)_both]"
+                                    style={{ '--index': i }}
+                                >
+                                    <MemberRow member={m} currentUserId={currentUserId} />
+                                </li>
                             ))}
                         </ul>
                     </section>
@@ -107,16 +113,20 @@ export default function MemberList({ members = [], currentUserId }) {
                             Desconectados — {offline.length}
                         </h3>
                         <ul className="space-y-0.5 opacity-70">
-                            {offline.map((m) => (
-                                <MemberRow key={`offline-${m.id}`} member={m} currentUserId={currentUserId} />
+                            {offline.map((m, i) => (
+                                <li
+                                    key={`offline-${m.id}`}
+                                    className="animate-[slide-up_300ms_var(--spring-gentle)_calc(var(--index)*50ms)_both]"
+                                    style={{ '--index': i }}
+                                >
+                                    <MemberRow member={m} currentUserId={currentUserId} />
+                                </li>
                             ))}
                         </ul>
                     </section>
                 )}
 
-                {members.length === 0 && (
-                    <p className="px-2 text-xs text-fg-subtle">Aún no hay miembros.</p>
-                )}
+                {members.length === 0 && <p className="px-2 text-xs text-fg-tertiary">Aún no hay miembros.</p>}
             </div>
         </aside>
     );

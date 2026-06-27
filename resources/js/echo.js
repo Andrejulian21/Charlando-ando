@@ -17,7 +17,7 @@
 import { io } from 'socket.io-client';
 
 const TOKEN_STORAGE_KEY = 'auth_token';
-const ROOM_PATTERN = /^(channel|dm):\d+$/;
+const ROOM_PATTERN = /^(channel|dm|server|user):\d+$/;
 
 let socket = null;
 

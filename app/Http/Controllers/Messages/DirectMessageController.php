@@ -24,6 +24,39 @@ class DirectMessageController extends Controller
 {
     private const PAGE_SIZE = 50;
 
+    public function listThreads(Request $request): JsonResponse
+    {
+        $userId = Auth::id();
+
+        $threads = DirectMessage::query()
+            ->where(function ($q) use ($userId) {
+                $q->where('user_a_id', $userId)->orWhere('user_b_id', $userId);
+            })
+            ->with(['userA', 'userB'])
+            ->orderByDesc('last_message_at')
+            ->orderByDesc('id')
+            ->get();
+
+        $data = $threads->map(function (DirectMessage $dm) use ($userId) {
+            $otherUserId = $dm->otherUserId($userId);
+            $otherUser = $otherUserId === $dm->user_a_id ? $dm->userA : $dm->userB;
+
+            return [
+                'id' => $dm->id,
+                'participant' => [
+                    'id' => $otherUser->id,
+                    'name' => $otherUser->name,
+                    'display_name' => $otherUser->display_name,
+                    'avatar_url' => $otherUser->avatar_url,
+                    'status' => $otherUser->status,
+                ],
+                'last_message_at' => $dm->last_message_at?->toIso8601String(),
+            ];
+        });
+
+        return response()->json(['data' => $data]);
+    }
+
     public function index(Request $request, DirectMessage $dm): JsonResponse
     {
         $this->ensureParticipant($dm);
@@ -73,7 +106,7 @@ class DirectMessageController extends Controller
     private function ensureParticipant(DirectMessage $dm): void
     {
         $userId = Auth::id();
-        abort_unless(in_array($userId, [$dm->user_a_id, $dm->user_b_id], true), 403, 'You are not a participant in this conversation.');
+        abort_unless(in_array($userId, [$dm->user_a_id, $dm->user_b_id], true), 403, 'No eres participante de esta conversación.');
     }
 
     public function createThread(Request $request): JsonResponse
@@ -86,7 +119,7 @@ class DirectMessageController extends Controller
         $targetUserId = (int) $data['user_id'];
 
         if ($authId === $targetUserId) {
-            abort(422, 'Cannot create a direct message with yourself.');
+            abort(422, 'No puedes crear un mensaje directo contigo mismo.');
         }
 
         $existing = DirectMessage::findBetween($authId, $targetUserId);

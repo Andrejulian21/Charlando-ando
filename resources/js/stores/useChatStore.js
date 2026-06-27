@@ -100,7 +100,10 @@ export const useChatStore = create((set, get) => ({
         const existing = messages.get(room) ?? [];
         const existingIds = new Set(existing.map((m) => m.id));
         // Reverse the page (server returns DESC) and filter duplicates.
-        const freshAsc = page.slice().reverse().filter((m) => !existingIds.has(m.id));
+        const freshAsc = page
+            .slice()
+            .reverse()
+            .filter((m) => !existingIds.has(m.id));
         if (freshAsc.length === 0) return;
         const next = new Map(messages);
         // Older messages go to the start of the ASC list.
@@ -196,7 +199,11 @@ export const useChatStore = create((set, get) => ({
      */
     disconnectSocket: () => {
         for (const { unsubscribe } of get()._roomListeners.values()) {
-            try { unsubscribe(); } catch { /* ignore */ }
+            try {
+                unsubscribe();
+            } catch {
+                /* ignore */
+            }
         }
         disconnect();
         set({ socketConnected: false, _roomListeners: new Map() });
@@ -213,7 +220,11 @@ export const useChatStore = create((set, get) => ({
     unsubscribeFromRoom: (room) => {
         const listeners = get()._roomListeners.get(room);
         if (!listeners) return;
-        try { listeners.unsubscribe(); } catch { /* ignore */ }
+        try {
+            listeners.unsubscribe();
+        } catch {
+            /* ignore */
+        }
         const next = new Map(get()._roomListeners);
         next.delete(room);
         set({ _roomListeners: next });
@@ -231,13 +242,13 @@ export const useChatStore = create((set, get) => ({
         }
 
         const unsubs = [];
-        if (room.startsWith('channel:') || room.startsWith('dm:')) {
+        if (room.startsWith('channel:') || room.startsWith('dm:') || room.startsWith('server:')) {
             unsubs.push(
                 echoSubscribe(room, 'message:new', (payload) => {
                     if (payload && payload.id) {
                         addMessage({ ...payload, room });
                     }
-                })
+                }),
             );
         }
         if (room.startsWith('user:')) {
@@ -250,13 +261,17 @@ export const useChatStore = create((set, get) => ({
                         // Fallback: payload shape is { user_id, status, at }
                         setPresence(payload?.user_id ?? userId, payload?.status, payload?.at ?? null);
                     }
-                })
+                }),
             );
         }
 
         const unsubscribe = () => {
             for (const fn of unsubs) {
-                try { fn(); } catch { /* ignore */ }
+                try {
+                    fn();
+                } catch {
+                    /* ignore */
+                }
             }
         };
 

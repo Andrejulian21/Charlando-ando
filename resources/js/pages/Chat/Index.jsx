@@ -1,32 +1,32 @@
-// Landing page for /chat. The layout is always the same — server rail,
-// channel list, main column, member list — but the right-hand panes are
-// empty until a server (and a channel) is picked. If the user has at
-// least one server we auto-navigate to its first channel so the page is
-// never useless; if they have none we show a friendly empty state.
+// Landing page for /chat. Shows DM threads in the sidebar (via ChannelList)
+// and the same thread list in the main content area. Public servers are
+// surfaced below the DM thread list so users can discover and join them.
 
-import { Head, router } from '@inertiajs/react';
-import { useEffect, useRef } from 'react';
+import { Head, Link, router } from '@inertiajs/react';
+import { useEffect } from 'react';
 import ServerSidebar from '../../components/Chat/ServerSidebar';
 import ChannelList from '../../components/Chat/ChannelList';
-import MemberList from '../../components/Chat/MemberList';
+import UserFloatingBar from '../../components/Layout/UserFloatingBar';
+import ChatLayout from '../../components/Layout/ChatLayout';
+import UserAvatar from '../../components/Presence/UserAvatar';
+import Button from '../../components/ui/Button';
+import Icon from '../../components/ui/Icon';
+import EmptyState from '../../components/ui/EmptyState';
 import { useChatStore } from '../../stores/useChatStore';
 
-function pickDefaultTarget(servers) {
-    if (!Array.isArray(servers) || servers.length === 0) return null;
-    const first = servers[0];
-    const channels = (first?.channels ?? []).slice().sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
-    if (channels.length === 0) return { server: first, channel: null };
-    return { server: first, channel: channels[0] };
-}
-
-export default function ChatIndex({ servers = [], auth }) {
-    const redirected = useRef(false);
+export default function ChatIndex({ servers = [], publicServers = [], threads = [], currentUserId, auth }) {
     const setChannels = useChatStore((s) => s.setChannels);
     const setCurrentUser = useChatStore((s) => s.setCurrentUser);
 
-    // Hydrate the store with the server list once, and forward the auth
-    // user to the store so the rest of the SPA can read it without a
-    // refetch.
+    const handleJoin = async (serverId) => {
+        try {
+            const res = await window.axios.post(`/api/servers/${serverId}/join`);
+            router.visit(`/chat/${res.data.data.id}`);
+        } catch {
+            // Silently fail
+        }
+    };
+
     useEffect(() => {
         for (const server of servers) {
             setChannels(server.id, server.channels ?? []);
@@ -34,53 +34,94 @@ export default function ChatIndex({ servers = [], auth }) {
         if (auth?.user) setCurrentUser(auth.user);
     }, [servers, auth, setChannels, setCurrentUser]);
 
-    // Auto-navigate to the first server's first channel so the user is
-    // never stuck on a blank page.
-    useEffect(() => {
-        if (redirected.current) return;
-        const target = pickDefaultTarget(servers);
-        if (!target?.server) return;
-        redirected.current = true;
-        const url = target.channel
-            ? `/chat/${target.server.id}/${target.channel.id}`
-            : `/chat/${target.server.id}`;
-        router.visit(url, { replace: true });
-    }, [servers]);
-
     return (
         <>
             <Head title="Chat" />
-
-            <div className="flex h-screen w-screen overflow-hidden bg-deep-space-900 text-fg">
-                <ServerSidebar servers={servers} />
-
-                <ChannelList server={null} activeChannelId={null} />
-
+            <ChatLayout
+                sidebar={<ServerSidebar servers={servers} />}
+                channelList={
+                    <ChannelList server={null} activeChannelId={null} threads={threads} currentUserId={currentUserId} />
+                }
+            >
                 <main className="flex flex-1 flex-col items-center justify-center px-6 text-center">
-                    {servers.length === 0 ? (
+                    {threads.length === 0 ? (
                         <EmptyState
-                            title="Aún no tienes servidores"
-                            description="Pide a alguien una invitación o espera a que te sumen a uno."
+                            icon={<Icon name="MessageCircle" size={48} />}
+                            title="Aún no tienes conversaciones"
+                            description="Busca usuarios para iniciar un chat."
                         />
                     ) : (
-                        <EmptyState
-                            title="Bienvenido a Charlando-ando"
-                            description="Elige un canal de la izquierda para empezar a chatear. Te llevamos automáticamente."
-                        />
+                        <div className="w-full max-w-lg space-y-1">
+                            {threads.map((thread) => {
+                                const other =
+                                    Number(thread.user_a_id) === Number(currentUserId)
+                                        ? (thread.user_b ?? thread.userB)
+                                        : (thread.user_a ?? thread.userA);
+                                if (!other) return null;
+                                return (
+                                    <Link
+                                        key={thread.id}
+                                        href={`/dms/${thread.id}`}
+                                        className="flex items-center gap-3 rounded-md border border-surface-elevated/60 bg-surface/70 p-3 hover:border-primary/40 transition-colors"
+                                    >
+                                        <UserAvatar user={other} size="md" showPresence />
+                                        <div className="min-w-0 flex-1 text-left">
+                                            <p className="truncate text-sm font-medium text-fg-primary">
+                                                {other.display_name || other.name}
+                                            </p>
+                                            <p className="text-xs text-fg-secondary">@{other.name}</p>
+                                        </div>
+                                    </Link>
+                                );
+                            })}
+                        </div>
                     )}
                 </main>
+            </ChatLayout>
 
-                <MemberList members={[]} />
-            </div>
+            {publicServers.length > 0 && (
+                <div className="fixed bottom-20 right-6 z-40 w-80 rounded-lg border border-surface-elevated/60 bg-surface/95 p-4 shadow-xl">
+                    <h2 className="mb-3 text-left text-xs font-semibold uppercase tracking-wider text-fg-secondary">
+                        Servidores públicos disponibles
+                    </h2>
+                    <ul className="space-y-2">
+                        {publicServers.map((server) => (
+                            <li key={server.id}>
+                                <div className="flex flex-col rounded-md border border-surface-elevated/40 bg-surface/70 p-3 hover:border-primary/40 transition-colors">
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <p className="truncate text-sm font-semibold text-fg-primary">{server.name}</p>
+                                            {server.members_count != null && (
+                                                <span className="shrink-0 rounded-full bg-surface-elevated px-2 py-0.5 text-[10px] text-fg-tertiary">
+                                                    {server.members_count}{' '}
+                                                    {server.members_count === 1 ? 'miembro' : 'miembros'}
+                                                </span>
+                                            )}
+                                        </div>
+                                        {server.description && (
+                                            <p className="mb-1 truncate text-xs text-fg-secondary">{server.description}</p>
+                                        )}
+                                        <p className="text-[10px] text-fg-tertiary">
+                                            Creado por {server.owner?.name ?? 'Desconocido'}
+                                        </p>
+                                    </div>
+                                    <Button
+                                        size="sm"
+                                        onClick={() => handleJoin(server.id)}
+                                        className="mt-2 w-full"
+                                    >
+                                        Unirse
+                                    </Button>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+
+            <UserFloatingBar />
         </>
     );
 }
 
-function EmptyState({ title, description }) {
-    return (
-        <div className="max-w-md space-y-3">
-            <h1 className="font-display text-2xl font-semibold tracking-tight text-fg">{title}</h1>
-            <p className="text-sm leading-relaxed text-fg-muted">{description}</p>
-        </div>
-    );
-}
+

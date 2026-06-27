@@ -19,6 +19,7 @@ class Server extends Model
         'name',
         'icon_url',
         'description',
+        'is_public',
     ];
 
     public function owner(): BelongsTo

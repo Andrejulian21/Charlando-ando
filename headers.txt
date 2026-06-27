@@ -1,0 +1,9 @@
+HTTP/1.1 419 unknown status
+Host: 127.0.0.1:8000
+Connection: close
+X-Powered-By: PHP/8.4.11
+Cache-Control: no-cache, private
+date: Fri, 12 Jun 2026 20:27:26 GMT
+Content-Type: text/html; charset=utf-8
+Set-Cookie: laravel-session=eyJpdiI6IlROcEtGR3FnaXhZNHhLNDhBTzRoTGc9PSIsInZhbHVlIjoidFR1blJGSkQzWXNuWkx2M1AvR0wrOWlhWW9nMWd4TVdOU05EZi9WM0QzakFRazkyRlBEdk0rNlNPR0xwSHlUTStLdHBqWDFpMGx6aE11Smg5SGRYdGRjOUNackc5akYzUm9VOFdpUDZQU2hiZTNxWFVTbEJ6VVFDblJ2RWZTQ0QiLCJtYWMiOiI5YTI5MWY4ODUwZjk3MjFjZDVlYzBjOTYwYTVkNDk0ZTBkZmZjNGVhNzYxZGJlZDVhYzFhMmM3ZTI4OGUzYjFjIiwidGFnIjoiIn0%3D; expires=Fri, 12 Jun 2026 22:27:26 GMT; Max-Age=7200; path=/; httponly; samesite=lax
+

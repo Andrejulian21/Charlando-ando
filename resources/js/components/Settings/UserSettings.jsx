@@ -36,14 +36,13 @@ export default function UserSettings({ user }) {
     }, [user]);
 
     const trimmedName = displayName.trim();
-    const nameError = trimmedName.length < NAME_MIN
-        ? `El nombre debe tener al menos ${NAME_MIN} caracteres.`
-        : trimmedName.length > NAME_MAX
-            ? `El nombre debe tener máximo ${NAME_MAX} caracteres.`
-            : null;
-    const avatarError = avatarUrl && avatarUrl.length > AVATAR_MAX
-        ? `La URL del avatar es demasiado larga.`
-        : null;
+    const nameError =
+        trimmedName.length < NAME_MIN
+            ? `El nombre debe tener al menos ${NAME_MIN} caracteres.`
+            : trimmedName.length > NAME_MAX
+              ? `El nombre debe tener máximo ${NAME_MAX} caracteres.`
+              : null;
+    const avatarError = avatarUrl && avatarUrl.length > AVATAR_MAX ? `La URL del avatar es demasiado larga.` : null;
     const canSave = !saving && !nameError && !avatarError;
 
     const handleSubmit = async (event) => {
@@ -80,11 +79,9 @@ export default function UserSettings({ user }) {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-8">
-            <section className="rounded-card border border-deep-space-700/60 bg-deep-space-800/70 p-6 backdrop-blur-sm">
+            <section className="glass rounded-xl p-6">
                 <h2 className="font-display text-lg font-semibold text-fg">Perfil</h2>
-                <p className="mt-1 text-sm text-fg-muted">
-                    Cómo apareces en servidores y mensajes directos.
-                </p>
+                <p className="mt-1 text-sm text-fg-muted">Cómo apareces en servidores y mensajes directos.</p>
 
                 <div className="mt-6 flex items-center gap-4">
                     <UserAvatar
@@ -126,7 +123,7 @@ export default function UserSettings({ user }) {
                 </div>
             </section>
 
-            <section className="rounded-card border border-deep-space-700/60 bg-deep-space-800/70 p-6 backdrop-blur-sm">
+            <section className="glass rounded-xl p-6">
                 <h2 className="font-display text-lg font-semibold text-fg">Estado</h2>
                 <p className="mt-1 text-sm text-fg-muted">
                     Define cómo te ven los demás. Ausente se activa tras 5 minutos de inactividad.
@@ -137,10 +134,10 @@ export default function UserSettings({ user }) {
                     {STATUSES.map((option) => (
                         <label
                             key={option.value}
-                            className={`flex cursor-pointer items-start gap-3 rounded-card border px-3 py-2 transition-colors ${
+                            className={`flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2 transition-colors ${
                                 status === option.value
                                     ? 'border-primary bg-primary/10'
-                                    : 'border-deep-space-600 bg-deep-space-700 hover:border-deep-space-500'
+                                    : 'border-surface-hover bg-surface-elevated hover:border-surface-highlight'
                             }`}
                         >
                             <input
@@ -162,13 +159,17 @@ export default function UserSettings({ user }) {
 
             <footer className="flex items-center justify-between gap-4">
                 <div>
-                    {error && <p role="alert" className="text-sm text-danger">{error}</p>}
+                    {error && (
+                        <p role="alert" className="text-sm text-danger">
+                            {error}
+                        </p>
+                    )}
                     {saved && !error && <p className="text-sm text-success">Guardado.</p>}
                 </div>
                 <button
                     type="submit"
                     disabled={!canSave}
-                    className="rounded-button bg-primary px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-all hover:-translate-y-px hover:bg-primary-hover hover:shadow-primary/40 active:translate-y-0 active:bg-primary-active disabled:translate-y-0 disabled:opacity-50"
+                    className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-all hover:-translate-y-px hover:bg-primary-hover hover:shadow-primary/40 active:translate-y-0 active:bg-primary-active disabled:translate-y-0 disabled:opacity-50"
                 >
                     {saving ? 'Guardando…' : 'Guardar cambios'}
                 </button>
@@ -185,7 +186,9 @@ function Field({ label, htmlFor, hint, error, children }) {
             </label>
             <div className="mt-1">{children}</div>
             {error ? (
-                <p role="alert" className="mt-1 text-xs text-danger">{error}</p>
+                <p role="alert" className="mt-1 text-xs text-danger">
+                    {error}
+                </p>
             ) : hint ? (
                 <p className="mt-1 text-xs text-fg-subtle">{hint}</p>
             ) : null}
@@ -195,7 +198,7 @@ function Field({ label, htmlFor, hint, error, children }) {
 
 function inputClass(error) {
     return [
-        'w-full rounded-button border bg-deep-space-700 px-3 py-2 text-sm text-fg placeholder-fg-subtle focus:outline-none transition-colors',
-        error ? 'border-danger focus:border-danger' : 'border-deep-space-600 focus:border-primary',
+        'w-full rounded-md border bg-surface-base px-3 py-2 text-sm text-fg placeholder-fg-subtle focus:outline-none transition-colors',
+        error ? 'border-danger focus:border-danger' : 'border-surface-hover focus:border-primary',
     ].join(' ');
 }

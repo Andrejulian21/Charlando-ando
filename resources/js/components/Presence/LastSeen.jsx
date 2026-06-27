@@ -9,6 +9,7 @@ const STATUS_LABEL = {
     online: 'En línea',
     idle: 'Ausente',
     dnd: 'No molestar',
+    offline: 'Invisible',
 };
 
 const STATUS_CLASS = {
@@ -40,10 +41,7 @@ export default function LastSeen({ userId, fallbackStatus, lastSeenAt, className
     const status = live?.status ?? fallbackStatus ?? 'offline';
     if (status === 'online' || status === 'idle' || status === 'dnd') {
         return (
-            <span
-                className={`text-[10px] ${STATUS_CLASS[status]} ${className}`.trim()}
-                data-status={status}
-            >
+            <span className={`text-[10px] ${STATUS_CLASS[status]} ${className}`.trim()} data-status={status}>
                 {STATUS_LABEL[status]}
             </span>
         );
@@ -51,8 +49,6 @@ export default function LastSeen({ userId, fallbackStatus, lastSeenAt, className
 
     // Offline / invisible — show last-seen.
     const seen = live?.lastSeen ?? lastSeenAt ?? null;
-    const text = seen ? `visto ${relativeTime(seen)}` : 'desconectado';
-    return (
-        <span className={`text-[10px] text-fg-subtle ${className}`.trim()}>{text}</span>
-    );
+    const text = seen ? `visto ${relativeTime(seen)}` : 'Invisible';
+    return <span className={`text-[10px] text-fg-subtle ${className}`.trim()}>{text}</span>;
 }

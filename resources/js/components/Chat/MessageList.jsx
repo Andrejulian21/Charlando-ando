@@ -200,7 +200,7 @@ export default function MessageList({
     if (!room) return null;
 
     return (
-        <div ref={scrollerRef} className="flex-1 overflow-y-auto bg-deep-space-900" data-testid="message-scroller">
+        <div ref={scrollerRef} className="flex-1 overflow-y-auto bg-surface-base" data-testid="message-scroller">
             <div ref={topSentinelRef} aria-hidden="true" className="h-2" />
 
             {loadingMore && (
@@ -221,7 +221,7 @@ export default function MessageList({
 
             <ol className="px-4 py-3">
                 {messages.length === 0 && !loadingMore && (
-                    <li className="rounded-card border border-dashed border-deep-space-600 bg-deep-space-800/50 px-4 py-8 text-center text-sm text-fg-muted">
+                    <li className="rounded-card border border-dashed border-border bg-surface/50 px-4 py-8 text-center text-sm text-fg-muted">
                         Aún no hay mensajes. Sé el primero en saludar.
                     </li>
                 )}

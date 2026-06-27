@@ -48,10 +48,10 @@ export default function Callback({ token, user }) {
         <>
             <Head title="Iniciando sesión" />
 
-            <main className="min-h-screen bg-deep-space-900">
+            <main className="min-h-screen bg-surface-base">
                 <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-6 text-center">
-                    <div className="rounded-card border border-deep-space-600 bg-deep-space-800 p-8 shadow-xl">
-                        <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-2 border-deep-space-500 border-t-primary" />
+                    <div className="glass rounded-xl p-8 shadow-xl">
+                        <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-2 border-surface-highlight border-t-primary" />
                         <h1 className="font-display text-lg font-semibold text-fg">Iniciando sesión…</h1>
                         <p className="mt-2 text-sm text-fg-muted">Espera un momento mientras terminamos.</p>
                     </div>

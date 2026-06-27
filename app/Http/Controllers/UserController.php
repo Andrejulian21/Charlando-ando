@@ -69,22 +69,22 @@ class UserController extends Controller
         $query = $request->query('q', '');
         $authId = Auth::id();
 
-        if ($query === '') {
-            return response()->json(['data' => []]);
-        }
+        $usersQuery = User::query()
+            ->where('id', '!=', $authId);
 
-        $term = mb_strtolower($query);
-
-        $users = User::query()
-            ->where('id', '!=', $authId)
-            ->where(function ($q) use ($term) {
+        if ($query !== '') {
+            $term = mb_strtolower($query);
+            $usersQuery->where(function ($q) use ($term) {
                 $like = '%' . $term . '%';
                 $q->whereRaw('LOWER(name) LIKE ?', [$like])
                     ->orWhereRaw('LOWER(display_name) LIKE ?', [$like])
                     ->orWhereRaw('LOWER(email) LIKE ?', [$like]);
-            })
+            });
+        }
+
+        $users = $usersQuery
             ->orderBy('name')
-            ->limit(20)
+            ->limit(50)
             ->get(['id', 'name', 'display_name', 'avatar_url']);
 
         $userIds = $users->pluck('id')->toArray();

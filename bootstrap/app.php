@@ -8,9 +8,19 @@ use Inertia\Inertia;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
-        api: __DIR__.'/../routes/api.php',
+        api: null,
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
+        using: function () {
+            $apiPath = __DIR__.'/../routes/api.php';
+            $webPath = __DIR__.'/../routes/web.php';
+
+            // API routes: use 'web' middleware for session auth with JSON prefix
+            Route::middleware('web')->prefix('api')->group($apiPath);
+
+            // Web routes: standard web middleware
+            Route::middleware('web')->group($webPath);
+        },
     )
     ->withMiddleware(function (Middleware $middleware): void {
         // Inertia 3 handles redirect semantics via the EnsureGetOnRedirect middleware

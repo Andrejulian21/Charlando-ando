@@ -1,4 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
+import Button from '../../components/ui/Button';
 
 const PROVIDERS = [
     { id: 'google', label: 'Continuar con Google' },
@@ -12,7 +13,7 @@ export default function Login({ errors = {}, appName = 'Charlando-ando', devLogi
         <>
             <Head title="Iniciar sesión" />
 
-            <main className="relative min-h-screen overflow-hidden bg-deep-space-900">
+            <main className="relative min-h-screen overflow-hidden bg-surface-base">
                 <div
                     aria-hidden="true"
                     className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(108,93,211,0.18),transparent_55%),radial-gradient(circle_at_bottom_right,rgba(56,189,248,0.08),transparent_60%)]"
@@ -23,16 +24,11 @@ export default function Login({ errors = {}, appName = 'Charlando-ando', devLogi
                         href="/"
                         className="mb-10 inline-flex items-center gap-2.5 text-fg-muted transition-colors hover:text-fg"
                     >
-                        <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary text-base font-bold text-white shadow-lg shadow-primary/30">
-                            CA
-                        </span>
-                        <span className="font-display text-lg font-semibold tracking-tight">
-                            {appName}
-                        </span>
+                        <img src="/nombre_con_icono.png" alt={appName} className="h-12 w-auto" />
                     </Link>
 
-                    <div className="relative w-full rounded-card bg-gradient-to-b from-primary/30 via-deep-space-600/40 to-transparent p-px shadow-2xl shadow-[0_0_60px_-15px_rgba(108,93,211,0.15)]">
-                        <section className="rounded-card border border-deep-space-700/50 bg-deep-space-800/80 p-10 backdrop-blur-sm">
+                    <div className="double-bezel animate-[spring-in_350ms_var(--spring-overshoot)]">
+                        <section className="glass-heavy rounded-[calc(2rem-0.375rem)] p-10">
                             <h1 className="font-display text-3xl font-semibold tracking-tight text-fg">
                                 Bienvenido de vuelta
                             </h1>
@@ -43,7 +39,7 @@ export default function Login({ errors = {}, appName = 'Charlando-ando', devLogi
                             {oauthError && (
                                 <div
                                     role="alert"
-                                    className="mt-5 rounded-card border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger"
+                                    className="mt-5 rounded-md border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger"
                                 >
                                     {oauthError}
                                 </div>
@@ -54,7 +50,7 @@ export default function Login({ errors = {}, appName = 'Charlando-ando', devLogi
                                     <a
                                         key={provider.id}
                                         href={`/auth/${provider.id}/redirect`}
-                                        className="flex w-full items-center justify-center gap-2.5 rounded-button border border-deep-space-500 bg-deep-space-700 px-4 py-3 text-sm font-semibold text-fg shadow-lg shadow-deep-space-900/20 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/50 hover:bg-deep-space-600 active:translate-y-0"
+                                        className="flex w-full items-center justify-center gap-2.5 rounded-md border border-border bg-surface-elevated px-4 py-3 text-sm font-semibold text-fg shadow-lg shadow-black/20 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/50 hover:bg-surface-hover active:translate-y-0"
                                     >
                                         <ProviderIcon id={provider.id} />
                                         {provider.label}
@@ -65,23 +61,17 @@ export default function Login({ errors = {}, appName = 'Charlando-ando', devLogi
                             {devLogin && (
                                 <>
                                     <div className="my-7 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-wider text-fg-subtle">
-                                        <span className="h-px flex-1 bg-deep-space-700" />
+                                        <span className="h-px flex-1 border-t border-border" />
                                         <span>O</span>
-                                        <span className="h-px flex-1 bg-deep-space-700" />
+                                        <span className="h-px flex-1 border-t border-border" />
                                     </div>
 
                                     <div className="space-y-3">
-                                        <Link
-                                            href="/dev-login"
-                                            className="flex w-full items-center justify-center gap-2 rounded-button bg-primary px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-hover hover:shadow-primary/40 active:translate-y-0 active:bg-primary-active"
-                                        >
-                                            Iniciar sesión con email
+                                        <Link href="/dev-login" className="block">
+                                            <Button variant="primary" className="w-full">Iniciar sesión con email</Button>
                                         </Link>
-                                        <Link
-                                            href="/dev-register"
-                                            className="flex w-full items-center justify-center gap-2 rounded-button border border-deep-space-500 bg-deep-space-700/60 px-4 py-3 text-sm font-semibold text-fg transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/50 hover:bg-deep-space-600 active:translate-y-0"
-                                        >
-                                            Crear cuenta
+                                        <Link href="/dev-register" className="block">
+                                            <Button variant="secondary" className="w-full">Crear cuenta</Button>
                                         </Link>
                                     </div>
                                 </>
@@ -112,7 +102,10 @@ function ProviderIcon({ id }) {
     if (id === 'google') {
         return (
             <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4">
-                <path fill="#EA4335" d="M12 10.2v3.84h5.52c-.24 1.44-1.74 4.2-5.52 4.2-3.3 0-6-2.76-6-6.18s2.7-6.18 6-6.18c1.92 0 3.18.78 3.9 1.44l2.64-2.58C16.86 3.12 14.64 2.16 12 2.16 6.42 2.16 1.92 6.66 1.92 12.06S6.42 22 12 22c6.9 0 9.84-4.86 9.84-9.36 0-.66-.06-1.14-.18-1.62H12z" />
+                <path
+                    fill="#EA4335"
+                    d="M12 10.2v3.84h5.52c-.24 1.44-1.74 4.2-5.52 4.2-3.3 0-6-2.76-6-6.18s2.7-6.18 6-6.18c1.92 0 3.18.78 3.9 1.44l2.64-2.58C16.86 3.12 14.64 2.16 12 2.16 6.42 2.16 1.92 6.66 1.92 12.06S6.42 22 12 22c6.9 0 9.84-4.86 9.84-9.36 0-.66-.06-1.14-.18-1.62H12z"
+                />
             </svg>
         );
     }
