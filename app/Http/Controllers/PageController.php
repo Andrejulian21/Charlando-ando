@@ -85,14 +85,20 @@ class PageController extends Controller
 
         $userId = $request->user()->getAuthIdentifier();
         $otherServers = Server::query()
-            ->whereHas('members', fn ($q) => $q->where('users.id', $userId))
+            ->where(function ($q) use ($userId) {
+                $q->whereHas('members', fn ($q) => $q->where('users.id', $userId))
+                  ->orWhere('is_public', true);
+            })
             ->whereKeyNot($server->id)
             ->orderBy('name')
-            ->get(['id', 'name', 'icon_url']);
+            ->get();
+
+        $firstChannel = $server->channels->first();
+        $channelData = $firstChannel ? $firstChannel->only(['id', 'name', 'type', 'topic', 'position']) : null;
 
         return Inertia::render('Chat/Show', [
             'server' => $server,
-            'channel' => $server->channels->first() ?? null,
+            'channel' => $channelData,
             'messages' => $messages->values(),
             'nextCursor' => $hasMore ? (int) $messages->last()->id : null,
             'members' => $server->members,
@@ -126,7 +132,7 @@ class PageController extends Controller
 
         return Inertia::render('Chat/Show', [
             'server' => $server,
-            'channel' => $channel,
+            'channel' => $channel->only(['id', 'name', 'type', 'topic', 'position']),
             'messages' => $messages->values(),
             'nextCursor' => $hasMore ? (int) $messages->last()->id : null,
             'members' => $server->members,
