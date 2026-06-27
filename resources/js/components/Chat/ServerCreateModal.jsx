@@ -78,26 +78,26 @@ export default function ServerCreateModal({ isOpen, onClose }) {
                         <button
                             type="button"
                             onClick={() => setIsPublic(true)}
-                            className={`flex-1 rounded-lg border px-3 py-2 text-sm transition-colors ${
+                            className={`flex-1 rounded-xl px-3 py-2.5 text-sm transition-all duration-200 [transition-timing-function:var(--spring-standard)] active:scale-[0.97] ${
                                 isPublic
-                                    ? 'border-primary bg-primary-subtle text-fg-primary'
-                                    : 'border-border bg-surface-elevated text-fg-secondary hover:border-border-hover'
+                                    ? 'glass border-primary/40 text-fg-primary shadow-sm shadow-primary/10'
+                                    : 'glass border-white/5 text-fg-secondary hover:text-fg-primary hover:border-white/10'
                             }`}
                         >
                             <span className="block font-medium">Público</span>
-                            <span className="block text-[10px] opacity-70">Cualquier persona puede unirse</span>
+                            <span className="block text-[10px] opacity-70 mt-0.5">Cualquier persona puede unirse</span>
                         </button>
                         <button
                             type="button"
                             onClick={() => setIsPublic(false)}
-                            className={`flex-1 rounded-lg border px-3 py-2 text-sm transition-colors ${
+                            className={`flex-1 rounded-xl px-3 py-2.5 text-sm transition-all duration-200 [transition-timing-function:var(--spring-standard)] active:scale-[0.97] ${
                                 !isPublic
-                                    ? 'border-primary bg-primary-subtle text-fg-primary'
-                                    : 'border-border bg-surface-elevated text-fg-secondary hover:border-border-hover'
+                                    ? 'glass border-primary/40 text-fg-primary shadow-sm shadow-primary/10'
+                                    : 'glass border-white/5 text-fg-secondary hover:text-fg-primary hover:border-white/10'
                             }`}
                         >
                             <span className="block font-medium">Privado</span>
-                            <span className="block text-[10px] opacity-70">Solo por invitación</span>
+                            <span className="block text-[10px] opacity-70 mt-0.5">Solo por invitación</span>
                         </button>
                     </div>
                 </div>
@@ -121,7 +121,7 @@ export default function ServerCreateModal({ isOpen, onClose }) {
                                     placeholder="Nombre del canal"
                                     disabled={creating}
                                     maxLength={100}
-                                    className="flex-1 rounded-md border border-border bg-surface px-3 py-2 text-sm text-fg-primary placeholder-fg-tertiary transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50"
+                                    className="glass flex-1 rounded-xl border-transparent px-3 py-2 text-sm text-fg-primary placeholder-fg-tertiary transition-all duration-200 [transition-timing-function:var(--spring-standard)] focus:ring-1 focus:ring-white/10 focus:outline-none disabled:opacity-50"
                                 />
                                 {channels.length > 1 && (
                                     <button
@@ -129,7 +129,7 @@ export default function ServerCreateModal({ isOpen, onClose }) {
                                         onClick={() => removeChannel(index)}
                                         disabled={creating}
                                         aria-label="Eliminar canal"
-                                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border text-fg-tertiary transition-colors hover:border-danger hover:text-danger disabled:opacity-50"
+                                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl glass text-fg-tertiary transition-all duration-200 [transition-timing-function:var(--spring-standard)] hover:border-danger/40 hover:text-danger active:scale-[0.92] disabled:opacity-50"
                                     >
                                         <svg aria-hidden="true" viewBox="0 0 20 20" className="h-4 w-4 fill-current">
                                             <path
@@ -149,7 +149,7 @@ export default function ServerCreateModal({ isOpen, onClose }) {
                             type="button"
                             onClick={addChannel}
                             disabled={creating}
-                            className="mt-1 flex items-center justify-center gap-1 rounded-md border border-dashed border-border-hover py-1.5 text-xs text-fg-tertiary transition-colors hover:border-primary hover:text-primary disabled:opacity-50"
+                            className="mt-1 flex items-center justify-center gap-1.5 rounded-xl glass border border-dashed border-white/10 py-2 text-xs text-fg-tertiary transition-all duration-200 [transition-timing-function:var(--spring-standard)] hover:border-primary/40 hover:text-primary active:scale-[0.97] disabled:opacity-50"
                         >
                             <svg aria-hidden="true" viewBox="0 0 20 20" className="h-3.5 w-3.5 fill-current">
                                 <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
