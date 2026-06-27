@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Channel;
 use App\Models\Server;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -91,6 +92,40 @@ class PageController extends Controller
 
         return Inertia::render('Chat/Show', [
             'server' => $server,
+            'messages' => $messages->values(),
+            'nextCursor' => $hasMore ? (int) $messages->last()->id : null,
+            'members' => $server->members,
+            'otherServers' => $otherServers,
+        ]);
+    }
+
+    public function chatChannelShow(Request $request, Server $server, Channel $channel): Response
+    {
+        abort_unless((int) $channel->server_id === (int) $server->id, 404);
+        $this->ensureMember($request, $server);
+
+        $messages = $channel->messages()
+            ->orderByDesc('id')
+            ->limit(self::MESSAGE_PAGE_SIZE + 1)
+            ->get(['id', 'user_id', 'content', 'edited_at', 'created_at']);
+
+        $hasMore = $messages->count() > self::MESSAGE_PAGE_SIZE;
+        if ($hasMore) {
+            $messages = $messages->take(self::MESSAGE_PAGE_SIZE);
+        }
+
+        $server->load(['channels' => fn ($q) => $q->orderBy('position')->orderBy('id'), 'members:id,name,display_name,avatar_url,status']);
+
+        $userId = $request->user()->getAuthIdentifier();
+        $otherServers = Server::query()
+            ->where(fn ($q) => $q->whereHas('members', fn ($q) => $q->where('users.id', $userId))->orWhere('is_public', true))
+            ->whereKeyNot($server->id)
+            ->orderBy('name')
+            ->get();
+
+        return Inertia::render('Chat/Show', [
+            'server' => $server,
+            'channel' => $channel,
             'messages' => $messages->values(),
             'nextCursor' => $hasMore ? (int) $messages->last()->id : null,
             'members' => $server->members,

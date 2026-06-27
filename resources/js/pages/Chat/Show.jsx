@@ -9,13 +9,14 @@ import UserFloatingBar from '../../components/Layout/UserFloatingBar';
 import ChatLayout from '../../components/Layout/ChatLayout';
 import { useChatStore } from '../../stores/useChatStore';
 
-export default function ChatShow({ server, messages = [], nextCursor = null, members = [], otherServers = [], auth }) {
+export default function ChatShow({ server, channel = null, messages = [], nextCursor = null, members = [], otherServers = [], auth }) {
     const setPresenceBatch = useChatStore((s) => s.setPresenceBatch);
     const setCurrentUser = useChatStore((s) => s.setCurrentUser);
     const setCurrentServer = useChatStore((s) => s.setCurrentServer);
     const connectSocket = useChatStore((s) => s.connectSocket);
 
-    const room = `server:${server.id}`;
+    const room = channel ? `server:${server.id}:${channel.id}` : `server:${server.id}`;
+    const channelId = channel?.id ?? null;
 
     useEffect(() => {
         if (auth?.user) setCurrentUser(auth.user);
@@ -49,7 +50,7 @@ export default function ChatShow({ server, messages = [], nextCursor = null, mem
                 channelList={
                     <ChannelList
                         server={server}
-                        activeChannelId={null}
+                        activeChannelId={channelId}
                     />
                 }
                 memberList={
@@ -61,12 +62,13 @@ export default function ChatShow({ server, messages = [], nextCursor = null, mem
                     initialMessages={messages}
                     initialCursor={nextCursor}
                     serverId={server.id}
-                    fetchUrl={`/api/servers/${server.id}/messages`}
+                    channelId={channelId}
+                    fetchUrl={channel ? `/api/servers/${server.id}/channels/${channel.id}/messages` : `/api/servers/${server.id}/messages`}
                     members={members}
                 />
                 <ChatComposer
-                    actionUrl={`/api/servers/${server.id}/messages`}
-                    room={`server:${server.id}`}
+                    actionUrl={channel ? `/api/servers/${server.id}/channels/${channel.id}/messages` : `/api/servers/${server.id}/messages`}
+                    room={room}
                     placeholder="Mensaje"
                 />
             </ChatLayout>

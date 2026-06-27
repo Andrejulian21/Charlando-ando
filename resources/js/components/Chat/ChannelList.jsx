@@ -11,6 +11,7 @@ import { useUserPresence } from '../../stores/useChatStore';
 function ChannelRow({ channel, active, serverId, index = 0 }) {
     const href = `/chat/${serverId}/${channel.id}`;
     const isText = (channel.type ?? 'text') === 'text';
+    const isGeneral = channel.name === 'general';
     return (
         <li
             style={{ '--index': index }}
@@ -25,6 +26,11 @@ function ChannelRow({ channel, active, serverId, index = 0 }) {
             >
                 <ChannelIcon type={channel.type} />
                 <span className="truncate">{channel.name}</span>
+                {isGeneral && (
+                    <span className="ml-auto rounded bg-primary/20 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                        default
+                    </span>
+                )}
             </Link>
         </li>
     );

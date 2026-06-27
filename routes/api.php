@@ -76,12 +76,19 @@ Route::middleware('auth')->group(function (): void {
     Route::post('servers/{server}/invites', [InviteController::class, 'store'])->name('api.servers.invites.store');
     Route::delete('servers/{server}/invites/{invite}', [InviteController::class, 'destroy'])->name('api.servers.invites.destroy');
     Route::post('invites/{code}/redeem', [InviteController::class, 'redeem'])->name('api.invites.redeem');
+    Route::post('servers/{server}/invite-user', [InviteController::class, 'inviteUser'])->name('api.servers.invite-user');
 
     // Roles
     Route::get('servers/{server}/roles', [RoleController::class, 'index'])->name('api.servers.roles.index');
     Route::post('servers/{server}/roles', [RoleController::class, 'store'])->name('api.servers.roles.store');
     Route::patch('servers/{server}/roles/{role}', [RoleController::class, 'update'])->name('api.servers.roles.update');
     Route::delete('servers/{server}/roles/{role}', [RoleController::class, 'destroy'])->name('api.servers.roles.destroy');
+
+    // Server members
+    Route::delete('servers/{server}/members/{member}', [\App\Http\Controllers\Servers\ServerMemberController::class, 'destroy'])
+        ->name('api.servers.members.destroy');
+    Route::post('servers/{server}/bans', [\App\Http\Controllers\Servers\ServerMemberController::class, 'ban'])
+        ->name('api.servers.members.ban');
 });
 
 // Sidecar-only endpoints (authenticated via X-Sidecar-Secret header).

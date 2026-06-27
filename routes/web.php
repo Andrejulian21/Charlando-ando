@@ -64,6 +64,10 @@ Route::middleware('auth')->group(function (): void {
         ->where('server', '[0-9]+')
         ->name('chat.show');
 
+    Route::get('/chat/{server}/{channel}', [PageController::class, 'chatChannelShow'])
+        ->where(['server' => '[0-9]+', 'channel' => '[0-9]+'])
+        ->name('chat.channel');
+
     Route::get('/dms', [PageController::class, 'dmsIndex'])
         ->name('dms.index');
 

@@ -49,6 +49,12 @@ class DirectMessage extends Model
             ->first();
     }
 
+    /** @alias of findBetween */
+    public static function threadBetween(int $userIdA, int $userIdB): ?self
+    {
+        return self::findBetween($userIdA, $userIdB);
+    }
+
     /**
      * Return the ID of the other participant given one participant's ID.
      */

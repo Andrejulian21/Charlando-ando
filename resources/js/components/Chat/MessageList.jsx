@@ -258,6 +258,7 @@ export default function MessageList({
                                 grouped={grouped}
                                 mine={mine}
                                 index={index}
+                                serverId={serverId}
                             />
                         </span>
                     );
@@ -269,7 +270,7 @@ export default function MessageList({
     );
 }
 
-function MessageRow({ message, author, grouped, mine, index }) {
+function MessageRow({ message, author, grouped, mine, index, serverId }) {
     return (
         <li
             style={{ '--index': index }}
@@ -295,6 +296,39 @@ function MessageRow({ message, author, grouped, mine, index }) {
                         )}
                     </div>
                 )}
+                {/* Invite card */}
+                {(() => {
+                    try {
+                        const parsed = JSON.parse(message.content);
+                        if (parsed.type === 'server_invite') {
+                            return (
+                                <div className="glass rounded-xl p-4 mt-1 space-y-2">
+                                    <p className="text-sm font-medium text-fg-primary">
+                                        ✉️ Invitación a <span className="text-primary">{parsed.server_name}</span>
+                                    </p>
+                                    <p className="text-xs text-fg-tertiary">por {parsed.invited_by}</p>
+                                    <div className="flex gap-2 pt-1">
+                                        <button
+                                            onClick={async () => {
+                                                try {
+                                                    await window.axios.post(`/api/servers/${parsed.server_id}/join`);
+                                                    window.location.href = `/chat/${parsed.server_id}`;
+                                                } catch {}
+                                            }}
+                                            className="rounded-lg bg-primary px-4 py-1.5 text-xs font-medium text-white transition-all hover:bg-primary-hover active:scale-[0.97]"
+                                        >
+                                            Aceptar
+                                        </button>
+                                        <button className="rounded-lg glass px-4 py-1.5 text-xs font-medium text-fg-secondary transition-all hover:text-fg-primary active:scale-[0.97]">
+                                            Rechazar
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        }
+                    } catch {}
+                    return null;
+                })()}
                 <p className="whitespace-pre-wrap break-words text-sm text-fg">{message.content}</p>
             </div>
         </li>

@@ -7,7 +7,7 @@
 // will land in a follow-up PR. We surface the role list as informational
 // badges so the user can see who has what.
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import UserAvatar from '../Presence/UserAvatar';
 import { router } from '@inertiajs/react';
 
@@ -198,24 +198,30 @@ function MembersTab({ server }) {
                             <p className="truncate text-sm font-medium text-fg">{member.display_name || member.name}</p>
                             <p className="truncate text-xs text-fg-subtle">@{member.name}</p>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <button
-                                type="button"
-                                onClick={() => handleKick(member)}
-                                disabled={acting === member.id}
-                                className="rounded-md border border-surface-hover bg-surface-elevated px-3 py-1 text-xs text-fg-muted transition-colors hover:bg-surface-hover hover:text-fg disabled:opacity-50"
-                            >
-                                {acting === member.id ? 'Procesando…' : 'Expulsar'}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => handleBan(member)}
-                                disabled={acting === member.id}
-                                className="rounded-md border border-danger/40 bg-danger/10 px-3 py-1 text-xs text-danger transition-colors hover:bg-danger/20 disabled:opacity-50"
-                            >
-                                Banear
-                            </button>
-                        </div>
+                        {member.id === server.owner_id ? (
+                            <span className="rounded bg-primary/20 px-2 py-1 text-xs font-medium text-primary">
+                                Dueño
+                            </span>
+                        ) : (
+                            <div className="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => handleKick(member)}
+                                    disabled={acting === member.id}
+                                    className="rounded-md border border-surface-hover bg-surface-elevated px-3 py-1 text-xs text-fg-muted transition-colors hover:bg-surface-hover hover:text-fg disabled:opacity-50"
+                                >
+                                    {acting === member.id ? 'Procesando…' : 'Expulsar'}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => handleBan(member)}
+                                    disabled={acting === member.id}
+                                    className="rounded-md border border-danger/40 bg-danger/10 px-3 py-1 text-xs text-danger transition-colors hover:bg-danger/20 disabled:opacity-50"
+                                >
+                                    Banear
+                                </button>
+                            </div>
+                        )}
                     </li>
                 ))}
                 {members.length === 0 && (
@@ -228,23 +234,43 @@ function MembersTab({ server }) {
 
 function InvitesTab({ server }) {
     const invites = server?.invites ?? [];
-    const [creating, setCreating] = useState(false);
+    const [inviteQuery, setInviteQuery] = useState('');
+    const [inviteResults, setInviteResults] = useState([]);
+    const [sendingInvite, setSendingInvite] = useState(null);
     const [error, setError] = useState(null);
-    const [newCode, setNewCode] = useState(null);
+    const [successMsg, setSuccessMsg] = useState(null);
 
-    const handleCreate = async () => {
-        setCreating(true);
+    // Debounced user search
+    useEffect(() => {
+        if (inviteQuery.trim().length < 2) {
+            setInviteResults([]);
+            return;
+        }
+        const timer = setTimeout(async () => {
+            try {
+                const response = await window.axios.get('/api/users/search', { params: { q: inviteQuery } });
+                setInviteResults(response.data?.data ?? []);
+            } catch {
+                setInviteResults([]);
+            }
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [inviteQuery]);
+
+    const handleInviteUser = async (user) => {
+        setSendingInvite(user.id);
         setError(null);
-        setNewCode(null);
+        setSuccessMsg(null);
         try {
-            const response = await window.axios.post(`/api/servers/${server.id}/invites`);
-            const data = response.data?.data;
-            setNewCode(data?.code ?? '');
+            await window.axios.post(`/api/servers/${server.id}/invite-user`, { user_id: user.id });
+            setSuccessMsg(`Invitación enviada a ${user.display_name || user.name}.`);
+            setInviteQuery('');
+            setInviteResults([]);
             router.reload({ only: ['server'] });
         } catch (err) {
-            setError(err?.response?.data?.message ?? 'No se pudo crear la invitación.');
+            setError(err?.response?.data?.message ?? 'No se pudo enviar la invitación.');
         } finally {
-            setCreating(false);
+            setSendingInvite(null);
         }
     };
 
@@ -258,20 +284,10 @@ function InvitesTab({ server }) {
         }
     };
 
-    const fullUrl = newCode ? `${window.location.origin}/invites/${newCode}` : null;
-
     return (
         <section className="glass rounded-xl p-6">
-            <header className="flex items-center justify-between">
+            <header className="mb-4 flex items-center justify-between">
                 <h2 className="font-display text-lg font-semibold text-fg">Invitaciones</h2>
-                <button
-                    type="button"
-                    onClick={handleCreate}
-                    disabled={creating}
-                    className="rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-white shadow-lg shadow-primary/25 transition-all hover:-translate-y-px hover:bg-primary-hover hover:shadow-primary/40 active:translate-y-0 active:bg-primary-active disabled:translate-y-0 disabled:opacity-50"
-                >
-                    {creating ? 'Creando…' : 'Nueva invitación'}
-                </button>
             </header>
 
             {error && (
@@ -280,12 +296,42 @@ function InvitesTab({ server }) {
                 </p>
             )}
 
-            {fullUrl && (
-                <div className="mt-3 rounded-md border border-success/40 bg-success/10 p-3 text-sm">
-                    <p className="text-success">Invitación creada.</p>
-                    <code className="mt-1 block break-all text-fg">{fullUrl}</code>
-                </div>
+            {successMsg && (
+                <p role="status" className="mt-3 text-sm text-success">
+                    {successMsg}
+                </p>
             )}
+
+            {/* Send invite to user */}
+            <section className="mb-6">
+                <h3 className="text-sm font-semibold text-fg-primary mb-2">Invitar usuario</h3>
+                <div className="flex gap-2">
+                    <input
+                        type="text"
+                        value={inviteQuery}
+                        onChange={(e) => setInviteQuery(e.target.value)}
+                        placeholder="Buscar usuario por nombre…"
+                        className="glass flex-1 rounded-xl border-transparent px-3 py-2 text-sm text-fg-primary placeholder-fg-tertiary focus:ring-1 focus:ring-white/10 focus:outline-none"
+                    />
+                </div>
+                {inviteResults.length > 0 && (
+                    <ul className="mt-2 space-y-1">
+                        {inviteResults.map((user) => (
+                            <li key={user.id} className="flex items-center gap-3 rounded-xl glass px-3 py-2">
+                                <span className="text-sm font-medium text-fg-primary">{user.display_name || user.name}</span>
+                                <span className="text-xs text-fg-tertiary">@{user.name}</span>
+                                <button
+                                    onClick={() => handleInviteUser(user)}
+                                    disabled={sendingInvite}
+                                    className="ml-auto rounded-lg bg-primary px-3 py-1 text-xs font-medium text-white transition-all hover:bg-primary-hover active:scale-[0.97] disabled:opacity-50"
+                                >
+                                    {sendingInvite === user.id ? 'Enviando…' : 'Invitar'}
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </section>
 
             <ul className="mt-4 divide-y divide-border">
                 {invites.map((invite) => (
