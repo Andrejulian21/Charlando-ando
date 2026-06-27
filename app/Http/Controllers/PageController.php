@@ -78,20 +78,21 @@ class PageController extends Controller
             $messages = $messages->take(self::MESSAGE_PAGE_SIZE);
         }
 
-        $server->load(['members:id,name,display_name,avatar_url,status']);
+        $server->load([
+            'channels' => fn ($q) => $q->orderBy('position')->orderBy('id'),
+            'members:id,name,display_name,avatar_url,status',
+        ]);
 
         $userId = $request->user()->getAuthIdentifier();
         $otherServers = Server::query()
-            ->where(function ($q) use ($userId) {
-                $q->whereHas('members', fn ($q) => $q->where('users.id', $userId))
-                  ->orWhere('is_public', true);
-            })
+            ->whereHas('members', fn ($q) => $q->where('users.id', $userId))
             ->whereKeyNot($server->id)
             ->orderBy('name')
-            ->get();
+            ->get(['id', 'name', 'icon_url']);
 
         return Inertia::render('Chat/Show', [
             'server' => $server,
+            'channel' => $server->channels->first() ?? null,
             'messages' => $messages->values(),
             'nextCursor' => $hasMore ? (int) $messages->last()->id : null,
             'members' => $server->members,

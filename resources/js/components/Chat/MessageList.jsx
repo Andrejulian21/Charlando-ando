@@ -304,7 +304,8 @@ function MessageRow({ message, author, grouped, mine, index, serverId }) {
                             return (
                                 <div className="glass rounded-xl p-4 mt-1 space-y-2">
                                     <p className="text-sm font-medium text-fg-primary">
-                                        ✉️ Invitación a <span className="text-primary">{parsed.server_name}</span>
+                                        <svg aria-hidden="true" viewBox="0 0 20 20" className="mr-1.5 inline-block h-4 w-4 fill-current text-primary"><path d="M10 1a7 7 0 0 0-7 7c0 2.1.9 3.9 2.5 5.2l-.4 2.7a.5.5 0 0 0 .8.5l2.5-1.8A7 7 0 1 0 10 1zM7 7h6a1 1 0 1 1 0 2H7a1 1 0 0 1 0-2zm0 3h4a1 1 0 1 1 0 2H7a1 1 0 0 1 0-2z"/></svg>
+                                        Invitación a <span className="text-primary">{parsed.server_name}</span>
                                     </p>
                                     <p className="text-xs text-fg-tertiary">por {parsed.invited_by}</p>
                                     <div className="flex gap-2 pt-1">
@@ -313,7 +314,9 @@ function MessageRow({ message, author, grouped, mine, index, serverId }) {
                                                 try {
                                                     await window.axios.post(`/api/servers/${parsed.server_id}/join`);
                                                     window.location.href = `/chat/${parsed.server_id}`;
-                                                } catch {}
+                                                } catch (e) {
+                                                    console.error('Error al aceptar invitación', e);
+                                                }
                                             }}
                                             className="rounded-lg bg-primary px-4 py-1.5 text-xs font-medium text-white transition-all hover:bg-primary-hover active:scale-[0.97]"
                                         >
@@ -329,7 +332,10 @@ function MessageRow({ message, author, grouped, mine, index, serverId }) {
                     } catch {}
                     return null;
                 })()}
-                <p className="whitespace-pre-wrap break-words text-sm text-fg">{message.content}</p>
+                {(() => {
+                    try { JSON.parse(message.content); return null; }
+                    catch { return <p className="whitespace-pre-wrap break-words text-sm text-fg">{message.content}</p>; }
+                })()}
             </div>
         </li>
     );
