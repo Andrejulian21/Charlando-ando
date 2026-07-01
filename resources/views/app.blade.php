@@ -17,6 +17,7 @@
 
         @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/app.jsx'])
+        <script>window.SOCKETIO_URL = "{{ env('SOCKETIO_PUBLIC_URL', 'https://charlando-ando-socketio.onrender.com') }}";</script>
         @inertiaHead
     </head>
     <body class="min-h-full bg-deep-space-900 text-slate-100 font-sans">

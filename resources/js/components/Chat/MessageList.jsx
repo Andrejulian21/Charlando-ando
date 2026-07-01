@@ -114,6 +114,27 @@ export default function MessageList({ room, initialMessages = [], initialCursor 
         }
     }, [storeMessages.length, loadingMore]);
 
+    // Auto-scroll to bottom when new messages arrive and user is near bottom
+    const isNearBottom = useRef(true);
+    const bottomRef = useRef(null);
+
+    useEffect(() => {
+        const scroller = scrollerRef.current;
+        if (!scroller) return;
+        const handleScroll = () => {
+            const threshold = 100;
+            isNearBottom.current = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < threshold;
+        };
+        scroller.addEventListener('scroll', handleScroll);
+        return () => scroller.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    useEffect(() => {
+        if (isNearBottom.current && bottomRef.current) {
+            bottomRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [storeMessages.length]);
+
     const displayMessages = storeMessages.length > 0 ? storeMessages : initialMessages;
 
     return (
@@ -154,6 +175,7 @@ export default function MessageList({ room, initialMessages = [], initialCursor 
                     })}
                 </div>
             </div>
+            <div ref={bottomRef} aria-hidden="true" />
         </div>
     );
 }
