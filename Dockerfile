@@ -23,7 +23,9 @@ FROM serversideup/php:8.4-fpm-nginx
 
 # Nginx document root → Laravel's public/
 ENV NGINX_DOCUMENT_ROOT=/var/www/html/public
-ENV AUTORUN_ENABLED=false
+# Auto-run migrations at container startup (AUTORUN handles artisan commands)
+ENV AUTORUN_ENABLED=true
+ENV PHP_OPCACHE_ENABLE=1
 
 WORKDIR /var/www/html
 
