@@ -34,6 +34,9 @@ return Application::configure(basePath: dirname(__DIR__))
             Request::HEADER_X_FORWARDED_PORT |
             Request::HEADER_X_FORWARDED_PROTO);
 
+        // CSRF exception for Socket.io sidecar presence notifications
+        $middleware->validateCsrfTokens(except: ['api/presence/disconnect']);
+
         // Inertia 3 handles redirect semantics via the EnsureGetOnRedirect middleware
         // registered by its service provider. The app does not need a global
         // HandleInertiaRequests middleware in v3 — controllers can call Inertia::render
