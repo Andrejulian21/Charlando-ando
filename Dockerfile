@@ -27,6 +27,9 @@ ENV AUTORUN_ENABLED=false
 
 WORKDIR /var/www/html
 
+# Base image sets USER nobody → switch to root for build steps
+USER root
+
 # PHP extensions: PostgreSQL driver + Redis (for queues/cache/pubsub)
 RUN install-php-extensions pdo_pgsql redis
 
@@ -40,13 +43,9 @@ COPY --from=frontend /app/public/build ./public/build
 RUN composer install --no-dev --no-interaction --optimize-autoloader
 
 # Permissions: storage + bootstrap/cache must be writable
-# (image's S6 init handles privilege dropping at runtime)
 RUN chown -R nobody:nogroup /var/www/html/storage \
                            /var/www/html/bootstrap/cache
 
-# ── Root entrypoint ──────────────────────────────────────────
-# The base image sets USER nobody, but the entrypoint needs root
-# to write nginx config. S6 init will drop privileges for services.
-USER root
-
+# Container runs as root so S6 init can write nginx config at startup.
+# S6 handles dropping privileges for PHP-FPM & Nginx services.
 EXPOSE 80
