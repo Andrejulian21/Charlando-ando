@@ -57,11 +57,6 @@ Route::middleware('auth')->group(function (): void {
     Route::post('servers/{server}/messages', [MessageController::class, 'storeForServer'])
         ->name('api.servers.messages.store');
 
-    // Legacy channel-level redirects (307 preserves POST method)
-    Route::any('servers/{server}/channels/{channel}/messages', function (Server $server) {
-        return redirect()->route('api.servers.messages.index', ['server' => $server], 307);
-    });
-
     // Direct messages
     Route::get('dms', [DirectMessageController::class, 'listThreads'])->name('api.dms.index');
     Route::get('dms/{dm}/messages', [DirectMessageController::class, 'index'])

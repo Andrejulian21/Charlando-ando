@@ -1,0 +1,62 @@
+# Dependencies
+/node_modules
+/vendor
+
+# Environment
+.env
+.env.*
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE / OS
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Laravel: runtime caches (built fresh in container)
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+!/storage/framework/.gitkeep
+!/storage/logs/.gitkeep
+
+# Build artifacts (we copy from stage 1)
+public/hot
+public/build
+
+# Tests & quality — not needed in prod
+/tests
+/coverage
+.phpunit*
+phpstan.neon
+phpunit.xml
+eslint.config.js
+prettier.config.js
+playwright.config.js
+
+# Docker
+compose.yaml
+Dockerfile
+.dockerignore
+
+# Docs
+README.md
+/designs
+/openspec
+/coverage
+
+# E2E
+/e2e
+/test-results
+testing
+cookies.txt
+headers.txt
+create_resp.json
+
+# Node artifacts (built in stage 1)
+package-lock.json

@@ -14,12 +14,16 @@ return Application::configure(basePath: dirname(__DIR__))
         using: function () {
             $apiPath = __DIR__.'/../routes/api.php';
             $webPath = __DIR__.'/../routes/web.php';
+            $healthPath = __DIR__.'/../routes/health.php';
 
             // API routes: use 'web' middleware for session auth with JSON prefix
             Route::middleware('web')->prefix('api')->group($apiPath);
 
             // Web routes: standard web middleware
             Route::middleware('web')->group($webPath);
+
+            // Health check (unauthenticated)
+            Route::middleware('web')->group($healthPath);
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
