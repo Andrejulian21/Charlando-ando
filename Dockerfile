@@ -19,7 +19,7 @@ RUN npm run build
 # --------------------------------------------------------------
 # Stage 2: PHP + Nginx runtime (serversideup/php)
 # --------------------------------------------------------------
-FROM serversideup/php:8.3-fpm-nginx
+FROM serversideup/php:8.4-fpm-nginx
 
 # Nginx document root → Laravel's public/
 ENV NGINX_DOCUMENT_ROOT=/var/www/html/public
