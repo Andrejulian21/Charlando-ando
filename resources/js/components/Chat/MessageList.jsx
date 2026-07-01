@@ -34,29 +34,36 @@ export default function MessageList({ room, initialMessages = [], initialCursor 
         return map;
     }, [members]);
 
-    const subscribeToRoom = useChatStore((s) => s.subscribeToRoom);
-    const unsubscribeFromRoom = useChatStore((s) => s.unsubscribeFromRoom);
+    const addMessage = useChatStore((s) => s.addMessage);
 
-    // Subscribe to the correct Socket.io room for real-time message delivery.
-    // Server publishes to "channel:{id}" or "dm:{id}" — derive from the room prop.
+    // Poll for new messages every 3 seconds as a fallback for real-time delivery
+    const lastPollId = useRef(null);
     useEffect(() => {
-        if (!room) return;
-        // room is "server:{serverId}:{channelId}" -> socket room is "channel:{channelId}"
-        // room is "dm:{dmId}" -> socket room is "dm:{dmId}"
-        const parts = room.split(':');
-        let socketRoom;
-        if (parts[0] === 'server' && parts[2]) {
-            socketRoom = `channel:${parts[2]}`;
-        } else if (parts[0] === 'dm') {
-            socketRoom = room;
-        } else {
-            return; // unknown format, no subscription
+        if (!room || !resolvedFetchUrl) return;
+        // Set initial last ID from the latest message
+        if (storeMessages.length > 0 && lastPollId.current === null) {
+            lastPollId.current = storeMessages[storeMessages.length - 1].id;
         }
-        const unsub = subscribeToRoom(socketRoom);
-        return () => {
-            try { unsub(); } catch { /* ignore */ }
-        };
-    }, [room, subscribeToRoom, unsubscribeFromRoom]);
+
+        const interval = setInterval(async () => {
+            try {
+                const params = {};
+                if (lastPollId.current) params.since = lastPollId.current;
+                const res = await window.axios.get(resolvedFetchUrl, { params });
+                const data = res.data?.data ?? [];
+                for (const msg of data) {
+                    if (lastPollId.current === null || msg.id > lastPollId.current) {
+                        addMessage({ ...msg, room });
+                        lastPollId.current = msg.id;
+                    }
+                }
+            } catch {
+                // Silently ignore polling errors
+            }
+        }, 3000);
+
+        return () => clearInterval(interval);
+    }, [room, resolvedFetchUrl]);
 
     const [loadingMore, setLoadingMore] = useState(false);
     const [hasMore, setHasMore] = useState(initialCursor != null);

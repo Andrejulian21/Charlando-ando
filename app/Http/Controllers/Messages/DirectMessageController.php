@@ -63,10 +63,15 @@ class DirectMessageController extends Controller
 
         $cursor = $request->query('cursor');
         $cursor = is_numeric($cursor) ? (int) $cursor : null;
+        $since = $request->query('since');
+        $since = is_numeric($since) ? (int) $since : null;
 
         $query = $dm->messages()->orderByDesc('id');
         if ($cursor !== null) {
             $query->where('id', '<', $cursor);
+        }
+        if ($since !== null) {
+            $query->where('id', '>', $since);
         }
 
         $messages = $query->limit(self::PAGE_SIZE + 1)->get(['id', 'user_id', 'content', 'edited_at', 'created_at']);
