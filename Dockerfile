@@ -43,7 +43,7 @@ COPY --from=frontend /app/public/build ./public/build
 RUN composer install --no-dev --no-interaction --optimize-autoloader
 
 # Permissions: storage + bootstrap/cache must be writable
-RUN chown -R nobody:nobody /var/www/html/storage \
+RUN chown -R nobody:nogroup /var/www/html/storage \
                            /var/www/html/bootstrap/cache
 
 # ── Nobody user (runtime) ────────────────────────────────────
