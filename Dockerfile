@@ -44,4 +44,9 @@ RUN composer install --no-dev --no-interaction --optimize-autoloader
 RUN chown -R nobody:nogroup /var/www/html/storage \
                            /var/www/html/bootstrap/cache
 
+# ── Root entrypoint ──────────────────────────────────────────
+# The base image sets USER nobody, but the entrypoint needs root
+# to write nginx config. S6 init will drop privileges for services.
+USER root
+
 EXPOSE 80
