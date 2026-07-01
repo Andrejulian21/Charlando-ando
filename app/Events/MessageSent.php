@@ -10,6 +10,7 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
 /**
@@ -85,11 +86,20 @@ class MessageSent implements ShouldBroadcast
             return;
         }
 
-        Redis::publish('events', json_encode([
-            'event' => self::EVENT_NAME,
-            'room' => $room,
-            'data' => $this->broadcastWith(),
-        ], JSON_THROW_ON_ERROR));
+        try {
+            $payload = json_encode([
+                'event' => self::EVENT_NAME,
+                'room' => $room,
+                'data' => $this->broadcastWith(),
+            ], JSON_THROW_ON_ERROR);
+
+            Redis::publish('events', $payload);
+        } catch (\Throwable $e) {
+            Log::warning('Redis publish failed for MessageSent', [
+                'error' => $e->getMessage(),
+                'room' => $room,
+            ]);
+        }
     }
 
     private function room(): string
