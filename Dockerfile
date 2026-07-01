@@ -27,9 +27,6 @@ ENV AUTORUN_ENABLED=false
 
 WORKDIR /var/www/html
 
-# ── Root steps ──────────────────────────────────────────────
-USER root
-
 # PHP extensions: PostgreSQL driver + Redis (for queues/cache/pubsub)
 RUN install-php-extensions pdo_pgsql redis
 
@@ -43,14 +40,8 @@ COPY --from=frontend /app/public/build ./public/build
 RUN composer install --no-dev --no-interaction --optimize-autoloader
 
 # Permissions: storage + bootstrap/cache must be writable
+# (image's S6 init handles privilege dropping at runtime)
 RUN chown -R nobody:nogroup /var/www/html/storage \
                            /var/www/html/bootstrap/cache
-
-# ── Nobody user (runtime) ────────────────────────────────────
-USER nobody
-
-# Migration & cache commands run at container startup
-# via Render's post-deploy hook, NOT at build time,
-# because env vars (DB_HOST, etc.) are only available at runtime.
 
 EXPOSE 80
