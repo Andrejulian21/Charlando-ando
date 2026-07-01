@@ -20,9 +20,9 @@ return new class extends Migration
         });
 
         // Functional unique index so a (1,2) and (2,1) conversation collapse to one row.
-        // MySQL 8+ only — LEAST/GREATEST are scalar functions there. SQLite fallback uses
-        // equivalent CASE expressions so dev environments can still run migrations.
-        if (DB::getDriverName() === 'mysql') {
+        // PostgreSQL and MySQL support LEAST/GREATEST natively; SQLite needs CASE expressions.
+        $driver = DB::getDriverName();
+        if (in_array($driver, ['mysql', 'pgsql', 'postgresql'], true)) {
             DB::statement('
                 CREATE UNIQUE INDEX direct_messages_pair_unique
                 ON direct_messages (LEAST(user_a_id, user_b_id), GREATEST(user_a_id, user_b_id))
