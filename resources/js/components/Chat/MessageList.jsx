@@ -34,6 +34,30 @@ export default function MessageList({ room, initialMessages = [], initialCursor 
         return map;
     }, [members]);
 
+    const subscribeToRoom = useChatStore((s) => s.subscribeToRoom);
+    const unsubscribeFromRoom = useChatStore((s) => s.unsubscribeFromRoom);
+
+    // Subscribe to the correct Socket.io room for real-time message delivery.
+    // Server publishes to "channel:{id}" or "dm:{id}" — derive from the room prop.
+    useEffect(() => {
+        if (!room) return;
+        // room is "server:{serverId}:{channelId}" -> socket room is "channel:{channelId}"
+        // room is "dm:{dmId}" -> socket room is "dm:{dmId}"
+        const parts = room.split(':');
+        let socketRoom;
+        if (parts[0] === 'server' && parts[2]) {
+            socketRoom = `channel:${parts[2]}`;
+        } else if (parts[0] === 'dm') {
+            socketRoom = room;
+        } else {
+            return; // unknown format, no subscription
+        }
+        const unsub = subscribeToRoom(socketRoom);
+        return () => {
+            try { unsub(); } catch { /* ignore */ }
+        };
+    }, [room, subscribeToRoom, unsubscribeFromRoom]);
+
     const [loadingMore, setLoadingMore] = useState(false);
     const [hasMore, setHasMore] = useState(initialCursor != null);
     const [cursor, setCursor] = useState(initialCursor);
