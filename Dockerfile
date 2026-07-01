@@ -43,8 +43,13 @@ COPY --from=frontend /app/public/build ./public/build
 RUN composer install --no-dev --no-interaction --optimize-autoloader
 
 # Permissions: storage + bootstrap/cache must be writable
-RUN chown -R nobody:nogroup /var/www/html/storage \
-                           /var/www/html/bootstrap/cache
+RUN mkdir -p /var/www/html/storage/logs \
+    /var/www/html/storage/framework/sessions \
+    /var/www/html/storage/framework/views \
+    /var/www/html/storage/framework/cache/data \
+    /var/www/html/bootstrap/cache && \
+    touch /var/www/html/storage/logs/laravel.log && \
+    chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Container runs as root so S6 init can write nginx config at startup.
 # S6 handles dropping privileges for PHP-FPM & Nginx services.
