@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -27,6 +28,12 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Trust Render's proxy to generate correct HTTPS URLs for assets
+        $middleware->trustProxies(at: '*', headers: Request::HEADER_X_FORWARDED_FOR |
+            Request::HEADER_X_FORWARDED_HOST |
+            Request::HEADER_X_FORWARDED_PORT |
+            Request::HEADER_X_FORWARDED_PROTO);
+
         // Inertia 3 handles redirect semantics via the EnsureGetOnRedirect middleware
         // registered by its service provider. The app does not need a global
         // HandleInertiaRequests middleware in v3 — controllers can call Inertia::render
