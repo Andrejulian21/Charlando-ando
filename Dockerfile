@@ -12,7 +12,7 @@ RUN npm install
 
 COPY . .
 
-ARG VITE_SOCKETIO_URL
+ARG VITE_SOCKETIO_URL=https://charlando-ando-socketio.onrender.com
 ENV VITE_SOCKETIO_URL=$VITE_SOCKETIO_URL
 RUN npm run build
 
