@@ -52,7 +52,7 @@ function ensureSocket() {
     socket = io(getSocketUrl(), {
         auth: token ? { token } : {},
         autoConnect: false,
-        transports: ['websocket', 'polling'],
+        transports: ['polling'],
         reconnection: true,
         reconnectionAttempts: Infinity,
         reconnectionDelay: 1_000,
