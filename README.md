@@ -2,6 +2,8 @@
 
 Discord-like real-time chat platform — Laravel 13 + Inertia.js + React + Socket.io sidecar.
 
+Live demo: https://charlando-ando.onrender.com
+
 ## Stack
 
 | Layer | Technology |
