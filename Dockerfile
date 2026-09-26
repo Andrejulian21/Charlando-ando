@@ -7,8 +7,8 @@ FROM node:22-alpine AS frontend
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm install
+COPY package.json package-lock.json ./
+RUN npm install -g npm@11.12.1 && npm ci --no-audit --no-fund
 
 COPY . .
 
