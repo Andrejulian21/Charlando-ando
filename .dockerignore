@@ -58,5 +58,5 @@ cookies.txt
 headers.txt
 create_resp.json
 
-# Node artifacts (built in stage 1)
-package-lock.json
+# Node artifacts (node_modules built in stage 1, but lockfile IS needed)
+# NOTE: do NOT ignore package-lock.json — frontend stage needs it for npm ci
